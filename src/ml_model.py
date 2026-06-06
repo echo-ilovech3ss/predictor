@@ -53,17 +53,28 @@ class MarketMLModel:
         scale_pos_weight = 0.70
         logger.info(f"Prioritizing high precision. Using scale_pos_weight={scale_pos_weight:.2f}")
         
+        # Add L1/L2 regularization and row/feature subsampling to prevent memorization (overfitting).
+        # We also enable early stopping to halt training when the validation loss stops improving.
         base_clf = XGBClassifier(
-            n_estimators=120,
+            n_estimators=200,          # Increased potential estimators, let early stopping halt it
             max_depth=5,
-            learning_rate=0.04,
-            min_child_weight=10,
+            learning_rate=0.03,        # Lower learning rate for more stable learning
+            min_child_weight=12,
+            subsample=0.8,             # Row subsampling (prevents memorizing specific row sequences)
+            colsample_bytree=0.8,      # Feature subsampling (prevents relying too heavily on any single feature)
+            reg_alpha=0.15,            # L1 regularization (encourages feature sparsity / drops weak inputs)
+            reg_lambda=3.0,            # L2 regularization (penalizes large weights / reduces noise sensitivity)
             scale_pos_weight=scale_pos_weight,
+            early_stopping_rounds=15,  # Stops training when validation loss stops improving
             random_state=42,
             n_jobs=-1,
             eval_metric='logloss'
         )
-        base_clf.fit(X_fit_scaled, y_fit)
+        base_clf.fit(
+            X_fit_scaled, y_fit,
+            eval_set=[(X_cal_scaled, y_cal)],
+            verbose=False
+        )
         
         # 5. Calibrate probabilities on X_cal
         # Using cv='prefit' allows calibrating a model that has already been fitted on a disjoint set.
