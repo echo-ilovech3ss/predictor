@@ -27,6 +27,10 @@ class Backtester:
         """
         logger.info(f"Starting backtest for {self.symbol} ({self.market} market) on {len(self.df)} candles...")
         
+        if ml_model is not None and hasattr(ml_model, 'optimal_threshold') and ml_model.optimal_threshold is not None:
+            self.strategy.min_confidence = ml_model.optimal_threshold
+            logger.info(f"Using model's saved optimal threshold: {self.strategy.min_confidence:.3f}")
+            
         # Prepare structures
         cash = Config.STARTING_CAPITAL
         position = None  # None or dict: {'entry_price': X, 'qty': Y, 'entry_time': T, 'stop_loss': SL}

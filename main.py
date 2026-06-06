@@ -180,7 +180,7 @@ def run_predict(symbol: str):
         prob_down, prob_up = 0.5, 0.5
         
     # 5. Generate strategy action recommendation
-    strat = Strategy()
+    strat = Strategy(min_confidence=ml_model.optimal_threshold)
     signal = strat.generate_signal(latest_row_dict, prob_up, prob_down)
     
     # 6. Update paper trading state

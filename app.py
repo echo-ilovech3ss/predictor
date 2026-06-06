@@ -239,7 +239,7 @@ else:
     prob_down, prob_up = 0.5, 0.5
 
 # Strategy generation
-strat = Strategy()
+strat = Strategy(min_confidence=ml_model.optimal_threshold if model_exists else None)
 signal = strat.generate_signal(latest_row_dict, prob_up, prob_down)
 
 # Update paper trader log

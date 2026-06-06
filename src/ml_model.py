@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from xgboost import XGBClassifier
 from sklearn.preprocessing import StandardScaler
-from sklearn.calibration import CalibratedClassifierCV
+from sklearn.model_selection import KFold
 from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
 from src.logger import logger
 
@@ -13,7 +13,7 @@ if not os.path.exists(MODEL_DIR):
     os.makedirs(MODEL_DIR)
 
 class MarketMLModel:
-    """Handles training, saving, loading, and predicting using a calibrated classifier."""
+    """Handles training, saving, loading, and predicting using a regularized XGBoost model."""
     
     def __init__(self, symbol: str):
         self.symbol = symbol.upper().replace("^", "")
@@ -21,11 +21,12 @@ class MarketMLModel:
         self.model = None
         self.scaler = None
         self.feature_names = []
+        self.optimal_threshold = 0.60
         
     def train(self, X: pd.DataFrame, y: pd.Series):
         """
         Train the model using a time-series split.
-        Applies strict scaling and calibration to prevent leakage.
+        Applies out-of-fold threshold tuning to prevent lookahead and optimize precision.
         """
         logger.info(f"Starting model training for {self.symbol}...")
         
@@ -34,57 +35,82 @@ class MarketMLModel:
         X_train, X_test = X.iloc[:split_idx], X.iloc[split_idx:]
         y_train, y_test = y.iloc[:split_idx], y.iloc[split_idx:]
         
-        # 2. Calibration Split within Training Data (80% fit, 20% calibrate)
-        cal_split_idx = int(len(X_train) * 0.8)
-        X_fit, X_cal = X_train.iloc[:cal_split_idx], X_train.iloc[cal_split_idx:]
-        y_fit, y_cal = y_train.iloc[:cal_split_idx], y_train.iloc[cal_split_idx:]
-        
         self.feature_names = list(X.columns)
         
-        # 3. Fit scaler ONLY on X_fit (training subset)
+        # Fit scaler on X_train
         self.scaler = StandardScaler()
-        X_fit_scaled = self.scaler.fit_transform(X_fit)
-        X_cal_scaled = self.scaler.transform(X_cal)
+        X_train_scaled = self.scaler.fit_transform(X_train)
         X_test_scaled = self.scaler.transform(X_test)
         
-        # 4. Train base model on X_fit using XGBClassifier
-        # Compute dynamic scale_pos_weight to balance positive classes
-        num_neg = np.sum(y_fit == 0)
-        num_pos = np.sum(y_fit == 1)
-        scale_pos_weight = num_neg / num_pos if num_pos > 0 else 1.0
-        logger.info(f"Prioritizing high precision. Training subset class balance: Negative={num_neg}, Positive={num_pos}. Using scale_pos_weight={scale_pos_weight:.2f}")
+        # 2. Run KFold cross-validation on Training Set to find optimal decision threshold
+        kf = KFold(n_splits=5, shuffle=True, random_state=42)
+        oof_probas = np.zeros(len(X_train))
         
-        # Add L1/L2 regularization and row/feature subsampling to prevent memorization (overfitting).
-        # We also enable early stopping to halt training when the validation loss stops improving.
-        base_clf = XGBClassifier(
-            n_estimators=200,          # Increased potential estimators, let early stopping halt it
-            max_depth=5,
-            learning_rate=0.03,        # Lower learning rate for more stable learning
-            min_child_weight=12,
-            subsample=0.8,             # Row subsampling (prevents memorizing specific row sequences)
-            colsample_bytree=0.8,      # Feature subsampling (prevents relying too heavily on any single feature)
-            reg_alpha=0.15,            # L1 regularization (encourages feature sparsity / drops weak inputs)
-            reg_lambda=3.0,            # L2 regularization (penalizes large weights / reduces noise sensitivity)
-            scale_pos_weight=scale_pos_weight,
-            early_stopping_rounds=15,  # Stops training when validation loss stops improving
+        logger.info("Running 5-fold cross-validation on training set to tune decision threshold...")
+        for train_cv_idx, val_cv_idx in kf.split(X_train):
+            X_tr, X_val = X_train.iloc[train_cv_idx], X_train.iloc[val_cv_idx]
+            y_tr, y_val = y_train.iloc[train_cv_idx], y_train.iloc[val_cv_idx]
+            
+            # Local scaling
+            fold_scaler = StandardScaler()
+            X_tr_scaled = fold_scaler.fit_transform(X_tr)
+            X_val_scaled = fold_scaler.transform(X_val)
+            
+            fold_clf = XGBClassifier(
+                n_estimators=100,
+                max_depth=3,
+                learning_rate=0.03,
+                min_child_weight=15,
+                subsample=0.75,
+                colsample_bytree=0.75,
+                reg_alpha=0.5,
+                reg_lambda=5.0,
+                scale_pos_weight=1.0,
+                random_state=42,
+                n_jobs=-1,
+                eval_metric='logloss'
+            )
+            fold_clf.fit(X_tr_scaled, y_tr)
+            oof_probas[val_cv_idx] = fold_clf.predict_proba(X_val_scaled)[:, 1]
+            
+        # Tune threshold on OOF predictions (maximize precision subject to recall >= 10%)
+        best_t = 0.50
+        best_oof_prec = 0.0
+        
+        for t in np.linspace(0.50, 0.65, 31):
+            preds = (oof_probas >= t).astype(int)
+            rec = recall_score(y_train, preds, zero_division=0)
+            prec = precision_score(y_train, preds, zero_division=0)
+            
+            if rec >= 0.10:  # Require at least 10% trade frequency in validation folds
+                if prec > best_oof_prec:
+                    best_oof_prec = prec
+                    best_t = t
+                    
+        self.optimal_threshold = float(best_t)
+        logger.info(f"OOF Threshold Tuning completed. Optimal Threshold: {self.optimal_threshold:.3f} (OOF Precision: {best_oof_prec:.4f})")
+        
+        # 3. Train final model on full training set
+        logger.info("Training final model on full training set...")
+        self.model = XGBClassifier(
+            n_estimators=100,
+            max_depth=3,
+            learning_rate=0.03,
+            min_child_weight=15,
+            subsample=0.75,
+            colsample_bytree=0.75,
+            reg_alpha=0.5,
+            reg_lambda=5.0,
+            scale_pos_weight=1.0,
             random_state=42,
             n_jobs=-1,
             eval_metric='logloss'
         )
-        base_clf.fit(
-            X_fit_scaled, y_fit,
-            eval_set=[(X_cal_scaled, y_cal)],
-            verbose=False
-        )
+        self.model.fit(X_train_scaled, y_train)
         
-        # 5. Calibrate probabilities on X_cal
-        # Using cv='prefit' allows calibrating a model that has already been fitted on a disjoint set.
-        self.model = CalibratedClassifierCV(estimator=base_clf, method="sigmoid", cv="prefit")
-        self.model.fit(X_cal_scaled, y_cal)
-        
-        # 6. Evaluate on Test set
-        y_pred = self.model.predict(X_test_scaled)
+        # 4. Evaluate on Test set using optimized threshold
         y_pred_proba = self.model.predict_proba(X_test_scaled)[:, 1]
+        y_pred = (y_pred_proba >= self.optimal_threshold).astype(int)
         
         acc = accuracy_score(y_test, y_pred)
         prec = precision_score(y_test, y_pred, zero_division=0)
@@ -92,9 +118,9 @@ class MarketMLModel:
         cm = confusion_matrix(y_test, y_pred)
         
         logger.info(f"--- Model Evaluation for {self.symbol} ---")
-        logger.info(f"Test Accuracy:  {acc:.4f}")
-        logger.info(f"Test Precision: {prec:.4f}")
-        logger.info(f"Test Recall:    {rec:.4f}")
+        logger.info(f"Test Accuracy (optimal threshold {self.optimal_threshold:.3f}):  {acc:.4f}")
+        logger.info(f"Test Precision (optimal threshold {self.optimal_threshold:.3f}): {prec:.4f}")
+        logger.info(f"Test Recall (optimal threshold {self.optimal_threshold:.3f}):    {rec:.4f}")
         logger.info(f"Confusion Matrix:\n{cm}")
         logger.info(
             "CRITICAL NOTE: Accuracy is just one piece of the puzzle. "
@@ -109,11 +135,12 @@ class MarketMLModel:
             "accuracy": acc,
             "precision": prec,
             "recall": rec,
-            "confusion_matrix": cm
+            "confusion_matrix": cm,
+            "optimal_threshold": self.optimal_threshold
         }
         
     def save(self):
-        """Save the trained model and scaler."""
+        """Save the trained model, scaler, and dynamic threshold."""
         if self.model is None or self.scaler is None:
             logger.error("Cannot save model: not trained yet.")
             return
@@ -121,7 +148,8 @@ class MarketMLModel:
         data_to_save = {
             "model": self.model,
             "scaler": self.scaler,
-            "feature_names": self.feature_names
+            "feature_names": self.feature_names,
+            "optimal_threshold": self.optimal_threshold
         }
         try:
             joblib.dump(data_to_save, self.model_path)
@@ -130,7 +158,7 @@ class MarketMLModel:
             logger.error(f"Failed to save model: {e}")
             
     def load(self) -> bool:
-        """Load model and scaler from disk."""
+        """Load model, scaler, and dynamic threshold from disk."""
         if not os.path.exists(self.model_path):
             logger.warning(f"No trained model found at {self.model_path}")
             return False
@@ -140,7 +168,8 @@ class MarketMLModel:
             self.model = saved_data["model"]
             self.scaler = saved_data["scaler"]
             self.feature_names = saved_data["feature_names"]
-            logger.info(f"Loaded trained model for {self.symbol} from {self.model_path}")
+            self.optimal_threshold = saved_data.get("optimal_threshold", 0.60)
+            logger.info(f"Loaded trained model for {self.symbol} from {self.model_path}. Optimal Threshold: {self.optimal_threshold:.3f}")
             return True
         except Exception as e:
             logger.error(f"Failed to load model from {self.model_path}: {e}")
