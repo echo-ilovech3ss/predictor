@@ -1,0 +1,1448 @@
+[2026-06-06 16:39:18] INFO [market_bot.prepare_data_for_training:92] Prepared training dataset: X shape (231, 25), y shape (231,)
+[2026-06-06 16:39:18] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 98.00, Trigger Price: 98.00
+[2026-06-06 16:39:18] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 97.90, Trigger Price: 98.00
+[2026-06-06 16:39:18] INFO [market_bot.can_open_position:42] Trade limit reached for today: 3 trades executed. Max limit is 3.
+[2026-06-06 16:39:18] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 16:39:18] INFO [market_bot.can_open_position:47] Cannot open new position: Daily loss limit is breached.
+[2026-06-06 16:39:18] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 16:39:31] INFO [market_bot.prepare_data_for_training:92] Prepared training dataset: X shape (231, 25), y shape (231,)
+[2026-06-06 16:39:31] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 98.00, Trigger Price: 98.00
+[2026-06-06 16:39:31] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 97.90, Trigger Price: 98.00
+[2026-06-06 16:39:31] INFO [market_bot.can_open_position:42] Trade limit reached for today: 3 trades executed. Max limit is 3.
+[2026-06-06 16:39:31] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 16:39:31] INFO [market_bot.can_open_position:47] Cannot open new position: Daily loss limit is breached.
+[2026-06-06 16:39:31] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 16:40:19] INFO [market_bot.run_train:50] --- TRAINING MODE FOR SPY ---
+[2026-06-06 16:40:19] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 16:40:19.244735-04:00 to 2026-06-06 16:40:19.244740-04:00
+[2026-06-06 16:40:19] INFO [market_bot.fetch_data:118] No cache found. Fetching clean data for SPY...
+[2026-06-06 16:40:20] INFO [market_bot.fetch_data:123] Saved initial fetch of 3459 rows to cache.
+[2026-06-06 16:40:20] INFO [market_bot.validate_recency:190] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:10:20.747550-04:00.
+[2026-06-06 16:40:20] INFO [market_bot.validate_recency:205] Recency check passed for SPY.
+[2026-06-06 16:40:20] INFO [market_bot.prepare_data_for_training:92] Prepared training dataset: X shape (3440, 25), y shape (3440,)
+[2026-06-06 16:40:20] INFO [market_bot.train:30] Starting model training for SPY...
+[2026-06-06 16:40:34] INFO [market_bot.run_train:50] --- TRAINING MODE FOR SPY ---
+[2026-06-06 16:40:34] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 16:40:34.789475-04:00 to 2026-06-06 16:40:34.789485-04:00
+[2026-06-06 16:40:34] WARNING [market_bot.fetch_data:94] Error reading cache file data_cache/spy_1h.csv: Tz-aware datetime.datetime cannot be converted to datetime64 unless utc=True, at position 710. Will overwrite cache.
+[2026-06-06 16:40:34] INFO [market_bot.fetch_data:102] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 16:40:34.789485-04:00...
+[2026-06-06 16:40:35] INFO [market_bot.fetch_data:114] Cache updated and saved. Total rows: 3459.
+[2026-06-06 16:40:35] INFO [market_bot.validate_recency:190] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:10:35.535500-04:00.
+[2026-06-06 16:40:35] INFO [market_bot.validate_recency:205] Recency check passed for SPY.
+[2026-06-06 16:40:35] INFO [market_bot.prepare_data_for_training:95] Prepared training dataset: X shape (3459, 25), y shape (3459,)
+[2026-06-06 16:40:35] INFO [market_bot.train:30] Starting model training for SPY...
+[2026-06-06 16:40:35] INFO [market_bot.train:75] --- Model Evaluation for SPY ---
+[2026-06-06 16:40:35] INFO [market_bot.train:76] Test Accuracy:  0.5101
+[2026-06-06 16:40:35] INFO [market_bot.train:77] Test Precision: 0.5190
+[2026-06-06 16:40:35] INFO [market_bot.train:78] Test Recall:    0.9008
+[2026-06-06 16:40:35] INFO [market_bot.train:79] Confusion Matrix:
+[[ 26 303]
+ [ 36 327]]
+[2026-06-06 16:40:35] INFO [market_bot.train:80] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 16:40:35] INFO [market_bot.save:109] Model successfully saved to models/SPY_model.joblib
+[2026-06-06 16:40:35] INFO [market_bot.run_train:71] Model trained and saved successfully for SPY.
+[2026-06-06 16:40:45] INFO [market_bot.run_backtest:74] --- BACKTEST MODE FOR SPY ---
+[2026-06-06 16:40:45] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 16:40:45.165292-04:00 to 2026-06-06 16:40:45.165297-04:00
+[2026-06-06 16:40:45] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 16:40:45] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 16:40:45.165297-04:00...
+[2026-06-06 16:40:45] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 16:40:45] INFO [market_bot.validate_recency:186] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:10:45.853435-04:00.
+[2026-06-06 16:40:45] INFO [market_bot.validate_recency:201] Recency check passed for SPY.
+[2026-06-06 16:40:45] INFO [market_bot.load:124] Loaded trained model for SPY from models/SPY_model.joblib
+[2026-06-06 16:40:45] INFO [market_bot.run_backtest:97] Running ML-guided strategy backtest...
+[2026-06-06 16:40:45] INFO [market_bot.run_backtest:28] Starting backtest for SPY (US market) on 3459 candles...
+[2026-06-06 16:41:32] INFO [market_bot.run_backtest:347] Backtest completed. Final Capital: 99955.20, Trades: 2, Win Rate: 50.00%, Max Drawdown: -0.77%
+[2026-06-06 16:41:32] INFO [market_bot.run_backtest:104] Running Rule-only baseline backtest...
+[2026-06-06 16:41:32] INFO [market_bot.run_backtest:28] Starting backtest for SPY (US market) on 3459 candles...
+[2026-06-06 16:41:33] INFO [market_bot.run_backtest:347] Backtest completed. Final Capital: 100000.00, Trades: 0, Win Rate: 0.00%, Max Drawdown: 0.00%
+[2026-06-06 16:41:37] INFO [market_bot.run_predict:140] --- PREDICTION & PAPER TRADING EXECUTION FOR SPY ---
+[2026-06-06 16:41:37] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2026-05-07 16:41:37.000160-04:00 to 2026-06-06 16:41:37.000165-04:00
+[2026-06-06 16:41:37] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 16:41:37] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 16:41:37.000165-04:00...
+[2026-06-06 16:41:37] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 16:41:37] INFO [market_bot.validate_recency:186] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:11:37.692549-04:00.
+[2026-06-06 16:41:37] INFO [market_bot.validate_recency:201] Recency check passed for SPY.
+[2026-06-06 16:41:37] ERROR [market_bot.run_predict:152] Not enough historical data points to run prediction. Need > 200 candles.
+[2026-06-06 16:42:16] INFO [market_bot.run_predict:139] --- PREDICTION & PAPER TRADING EXECUTION FOR SPY ---
+[2026-06-06 16:42:16] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2026-04-07 16:42:16.497089-04:00 to 2026-06-06 16:42:16.497093-04:00
+[2026-06-06 16:42:16] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 16:42:16] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 16:42:16.497093-04:00...
+[2026-06-06 16:42:17] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 16:42:17] INFO [market_bot.validate_recency:186] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:12:17.236620-04:00.
+[2026-06-06 16:42:17] INFO [market_bot.validate_recency:201] Recency check passed for SPY.
+[2026-06-06 16:42:17] INFO [market_bot.load:124] Loaded trained model for SPY from models/SPY_model.joblib
+[2026-06-06 16:42:17] INFO [market_bot.load_state:32] Initialized new paper trader state for SPY at spy_paper_trader_state.json
+[2026-06-06 16:42:23] INFO [market_bot.run_train:49] --- TRAINING MODE FOR NIFTY ---
+[2026-06-06 16:42:23] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 16:42:23.188115+05:30 to 2026-06-06 16:42:23.188121+05:30
+[2026-06-06 16:42:23] INFO [market_bot.fetch_data:114] No cache found. Fetching clean data for NIFTY...
+[2026-06-06 16:42:24] INFO [market_bot.fetch_data:119] Saved initial fetch of 3419 rows to cache.
+[2026-06-06 16:42:24] INFO [market_bot.validate_recency:186] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 16:42:24.541596+05:30.
+[2026-06-06 16:42:24] INFO [market_bot.validate_recency:201] Recency check passed for NIFTY.
+[2026-06-06 16:42:24] INFO [market_bot.prepare_data_for_training:95] Prepared training dataset: X shape (3419, 25), y shape (3419,)
+[2026-06-06 16:42:24] INFO [market_bot.train:30] Starting model training for NIFTY...
+[2026-06-06 16:42:24] INFO [market_bot.train:75] --- Model Evaluation for NIFTY ---
+[2026-06-06 16:42:24] INFO [market_bot.train:76] Test Accuracy:  0.4883
+[2026-06-06 16:42:24] INFO [market_bot.train:77] Test Precision: 0.4863
+[2026-06-06 16:42:24] INFO [market_bot.train:78] Test Recall:    0.8503
+[2026-06-06 16:42:24] INFO [market_bot.train:79] Confusion Matrix:
+[[ 50 300]
+ [ 50 284]]
+[2026-06-06 16:42:24] INFO [market_bot.train:80] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 16:42:24] INFO [market_bot.save:109] Model successfully saved to models/NIFTY_model.joblib
+[2026-06-06 16:42:24] INFO [market_bot.run_train:70] Model trained and saved successfully for NIFTY.
+[2026-06-06 16:42:29] INFO [market_bot.run_predict:139] --- PREDICTION & PAPER TRADING EXECUTION FOR NIFTY ---
+[2026-06-06 16:42:29] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2026-04-07 16:42:29.763192+05:30 to 2026-06-06 16:42:29.763197+05:30
+[2026-06-06 16:42:29] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 16:42:29] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 16:42:29.763197+05:30...
+[2026-06-06 16:42:32] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 16:42:32] INFO [market_bot.validate_recency:186] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 16:42:32.680046+05:30.
+[2026-06-06 16:42:32] INFO [market_bot.validate_recency:201] Recency check passed for NIFTY.
+[2026-06-06 16:42:32] INFO [market_bot.load:124] Loaded trained model for NIFTY from models/NIFTY_model.joblib
+[2026-06-06 16:42:32] INFO [market_bot.load_state:32] Initialized new paper trader state for NIFTY at nifty_paper_trader_state.json
+[2026-06-06 16:45:54] INFO [market_bot.run_train:52] --- TRAINING MODE FOR SPY ---
+[2026-06-06 16:45:54] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2021-06-07 16:45:54.932012-04:00 to 2026-06-06 16:45:54.932017-04:00
+[2026-06-06 16:45:54] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 16:45:54] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 16:45:54.932017-04:00...
+[2026-06-06 16:45:57] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 16:45:57] INFO [market_bot.validate_recency:186] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:15:57.310369-04:00.
+[2026-06-06 16:45:57] INFO [market_bot.validate_recency:201] Recency check passed for SPY.
+[2026-06-06 16:45:57] INFO [market_bot.prepare_data_for_training:95] Prepared training dataset: X shape (3459, 25), y shape (3459,)
+[2026-06-06 16:45:57] INFO [market_bot.train:30] Starting model training for SPY...
+[2026-06-06 16:45:57] INFO [market_bot.train:75] --- Model Evaluation for SPY ---
+[2026-06-06 16:45:57] INFO [market_bot.train:76] Test Accuracy:  0.5101
+[2026-06-06 16:45:57] INFO [market_bot.train:77] Test Precision: 0.5190
+[2026-06-06 16:45:57] INFO [market_bot.train:78] Test Recall:    0.9008
+[2026-06-06 16:45:57] INFO [market_bot.train:79] Confusion Matrix:
+[[ 26 303]
+ [ 36 327]]
+[2026-06-06 16:45:57] INFO [market_bot.train:80] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 16:45:57] INFO [market_bot.save:109] Model successfully saved to models/SPY_model.joblib
+[2026-06-06 16:45:57] INFO [market_bot.run_train:73] Model trained and saved successfully for SPY.
+[2026-06-06 16:46:00] INFO [market_bot.prepare_data_for_training:95] Prepared training dataset: X shape (250, 25), y shape (250,)
+[2026-06-06 16:46:00] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 98.00, Trigger Price: 98.00
+[2026-06-06 16:46:00] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 97.90, Trigger Price: 98.00
+[2026-06-06 16:46:00] INFO [market_bot.can_open_position:42] Trade limit reached for today: 3 trades executed. Max limit is 3.
+[2026-06-06 16:46:00] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 16:46:00] INFO [market_bot.can_open_position:47] Cannot open new position: Daily loss limit is breached.
+[2026-06-06 16:46:00] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 16:47:21] INFO [market_bot.run_train:49] --- TRAINING MODE FOR SPY ---
+[2026-06-06 16:47:21] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 16:47:21.255953-04:00 to 2026-06-06 16:47:21.255958-04:00
+[2026-06-06 16:47:21] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 16:47:21] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 16:47:21.255958-04:00...
+[2026-06-06 16:47:22] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 16:47:22] INFO [market_bot.validate_recency:186] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:17:22.833737-04:00.
+[2026-06-06 16:47:22] INFO [market_bot.validate_recency:201] Recency check passed for SPY.
+[2026-06-06 16:47:22] INFO [market_bot.prepare_data_for_training:95] Prepared training dataset: X shape (3459, 25), y shape (3459,)
+[2026-06-06 16:47:22] INFO [market_bot.train:30] Starting model training for SPY...
+[2026-06-06 16:47:23] INFO [market_bot.train:75] --- Model Evaluation for SPY ---
+[2026-06-06 16:47:23] INFO [market_bot.train:76] Test Accuracy:  0.5101
+[2026-06-06 16:47:23] INFO [market_bot.train:77] Test Precision: 0.5190
+[2026-06-06 16:47:23] INFO [market_bot.train:78] Test Recall:    0.9008
+[2026-06-06 16:47:23] INFO [market_bot.train:79] Confusion Matrix:
+[[ 26 303]
+ [ 36 327]]
+[2026-06-06 16:47:23] INFO [market_bot.train:80] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 16:47:23] INFO [market_bot.save:109] Model successfully saved to models/SPY_model.joblib
+[2026-06-06 16:47:23] INFO [market_bot.run_train:70] Model trained and saved successfully for SPY.
+[2026-06-06 16:48:02] INFO [market_bot.run_train:49] --- TRAINING MODE FOR NIFTY ---
+[2026-06-06 16:48:02] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 16:48:02.656863+05:30 to 2026-06-06 16:48:02.656869+05:30
+[2026-06-06 16:48:02] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 16:48:02] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 16:48:02.656869+05:30...
+[2026-06-06 16:48:05] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 16:48:05] INFO [market_bot.validate_recency:186] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 16:48:05.686586+05:30.
+[2026-06-06 16:48:05] INFO [market_bot.validate_recency:201] Recency check passed for NIFTY.
+[2026-06-06 16:48:05] INFO [market_bot.prepare_data_for_training:95] Prepared training dataset: X shape (3419, 25), y shape (3419,)
+[2026-06-06 16:48:05] INFO [market_bot.train:30] Starting model training for NIFTY...
+[2026-06-06 16:48:05] INFO [market_bot.train:75] --- Model Evaluation for NIFTY ---
+[2026-06-06 16:48:05] INFO [market_bot.train:76] Test Accuracy:  0.4883
+[2026-06-06 16:48:05] INFO [market_bot.train:77] Test Precision: 0.4863
+[2026-06-06 16:48:05] INFO [market_bot.train:78] Test Recall:    0.8503
+[2026-06-06 16:48:05] INFO [market_bot.train:79] Confusion Matrix:
+[[ 50 300]
+ [ 50 284]]
+[2026-06-06 16:48:05] INFO [market_bot.train:80] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 16:48:05] INFO [market_bot.save:109] Model successfully saved to models/NIFTY_model.joblib
+[2026-06-06 16:48:05] INFO [market_bot.run_train:70] Model trained and saved successfully for NIFTY.
+[2026-06-06 16:56:53] INFO [market_bot.prepare_data_for_training:104] Prepared training dataset: X shape (250, 27), y shape (250,)
+[2026-06-06 16:56:53] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 98.00, Trigger Price: 98.00
+[2026-06-06 16:56:53] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 97.90, Trigger Price: 98.00
+[2026-06-06 16:56:53] INFO [market_bot.can_open_position:42] Trade limit reached for today: 3 trades executed. Max limit is 3.
+[2026-06-06 16:56:53] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 16:56:53] INFO [market_bot.can_open_position:47] Cannot open new position: Daily loss limit is breached.
+[2026-06-06 16:56:53] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 16:57:00] INFO [market_bot.run_train:49] --- TRAINING MODE FOR SPY ---
+[2026-06-06 16:57:00] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 16:57:00.458018-04:00 to 2026-06-06 16:57:00.458022-04:00
+[2026-06-06 16:57:00] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 16:57:00] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 16:57:00.458022-04:00...
+[2026-06-06 16:57:01] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 16:57:01] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:27:01.123234-04:00.
+[2026-06-06 16:57:01] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 16:57:01] INFO [market_bot.prepare_data_for_training:104] Prepared training dataset: X shape (3459, 27), y shape (3459,)
+[2026-06-06 16:57:01] INFO [market_bot.train:30] Starting model training for SPY...
+[2026-06-06 16:57:01] INFO [market_bot.train:77] --- Model Evaluation for SPY ---
+[2026-06-06 16:57:01] INFO [market_bot.train:78] Test Accuracy:  0.5058
+[2026-06-06 16:57:01] INFO [market_bot.train:79] Test Precision: 0.5170
+[2026-06-06 16:57:01] INFO [market_bot.train:80] Test Recall:    0.8788
+[2026-06-06 16:57:01] INFO [market_bot.train:81] Confusion Matrix:
+[[ 31 298]
+ [ 44 319]]
+[2026-06-06 16:57:01] INFO [market_bot.train:82] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 16:57:01] INFO [market_bot.save:111] Model successfully saved to models/SPY_model.joblib
+[2026-06-06 16:57:01] INFO [market_bot.run_train:70] Model trained and saved successfully for SPY.
+[2026-06-06 16:57:02] INFO [market_bot.run_train:49] --- TRAINING MODE FOR NIFTY ---
+[2026-06-06 16:57:02] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 16:57:02.958789+05:30 to 2026-06-06 16:57:02.958794+05:30
+[2026-06-06 16:57:02] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 16:57:02] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 16:57:02.958794+05:30...
+[2026-06-06 16:57:04] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 16:57:04] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 16:57:04] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 16:57:02.958789+05:30 to 2026-06-06 16:57:02.958794+05:30
+[2026-06-06 16:57:04] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 16:57:04] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 16:57:02.958794+05:30...
+[2026-06-06 16:57:04] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 16:57:04] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:27:04.292743-04:00.
+[2026-06-06 16:57:04] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 16:57:04] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 16:57:04] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 16:57:04.296504+05:30.
+[2026-06-06 16:57:04] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 16:57:04] INFO [market_bot.prepare_data_for_training:104] Prepared training dataset: X shape (3419, 29), y shape (3419,)
+[2026-06-06 16:57:04] INFO [market_bot.train:30] Starting model training for NIFTY...
+[2026-06-06 16:57:04] INFO [market_bot.train:77] --- Model Evaluation for NIFTY ---
+[2026-06-06 16:57:04] INFO [market_bot.train:78] Test Accuracy:  0.4912
+[2026-06-06 16:57:04] INFO [market_bot.train:79] Test Precision: 0.4895
+[2026-06-06 16:57:04] INFO [market_bot.train:80] Test Recall:    0.9790
+[2026-06-06 16:57:04] INFO [market_bot.train:81] Confusion Matrix:
+[[  9 341]
+ [  7 327]]
+[2026-06-06 16:57:04] INFO [market_bot.train:82] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 16:57:04] INFO [market_bot.save:111] Model successfully saved to models/NIFTY_model.joblib
+[2026-06-06 16:57:04] INFO [market_bot.run_train:70] Model trained and saved successfully for NIFTY.
+[2026-06-06 16:59:06] INFO [market_bot.prepare_data_for_training:102] Prepared training dataset: X shape (250, 27), y shape (250,)
+[2026-06-06 16:59:06] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 98.00, Trigger Price: 98.00
+[2026-06-06 16:59:06] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 97.90, Trigger Price: 98.00
+[2026-06-06 16:59:06] INFO [market_bot.can_open_position:42] Trade limit reached for today: 3 trades executed. Max limit is 3.
+[2026-06-06 16:59:06] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 16:59:06] INFO [market_bot.can_open_position:47] Cannot open new position: Daily loss limit is breached.
+[2026-06-06 16:59:06] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 16:59:12] INFO [market_bot.run_train:49] --- TRAINING MODE FOR SPY ---
+[2026-06-06 16:59:12] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 16:59:12.643110-04:00 to 2026-06-06 16:59:12.643115-04:00
+[2026-06-06 16:59:12] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 16:59:12] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 16:59:12.643115-04:00...
+[2026-06-06 16:59:13] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 16:59:13] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:29:13.656260-04:00.
+[2026-06-06 16:59:13] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 16:59:13] INFO [market_bot.prepare_data_for_training:102] Prepared training dataset: X shape (3459, 27), y shape (3459,)
+[2026-06-06 16:59:13] INFO [market_bot.train:30] Starting model training for SPY...
+[2026-06-06 16:59:13] INFO [market_bot.train:77] --- Model Evaluation for SPY ---
+[2026-06-06 16:59:13] INFO [market_bot.train:78] Test Accuracy:  0.4668
+[2026-06-06 16:59:13] INFO [market_bot.train:79] Test Precision: 0.4678
+[2026-06-06 16:59:13] INFO [market_bot.train:80] Test Recall:    0.5510
+[2026-06-06 16:59:13] INFO [market_bot.train:81] Confusion Matrix:
+[[134 215]
+ [154 189]]
+[2026-06-06 16:59:13] INFO [market_bot.train:82] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 16:59:13] INFO [market_bot.save:111] Model successfully saved to models/SPY_model.joblib
+[2026-06-06 16:59:13] INFO [market_bot.run_train:70] Model trained and saved successfully for SPY.
+[2026-06-06 16:59:15] INFO [market_bot.run_train:49] --- TRAINING MODE FOR NIFTY ---
+[2026-06-06 16:59:15] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 16:59:15.509514+05:30 to 2026-06-06 16:59:15.509519+05:30
+[2026-06-06 16:59:15] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 16:59:15] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 16:59:15.509519+05:30...
+[2026-06-06 16:59:17] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 16:59:17] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 16:59:17] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 16:59:15.509514+05:30 to 2026-06-06 16:59:15.509519+05:30
+[2026-06-06 16:59:17] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 16:59:17] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 16:59:15.509519+05:30...
+[2026-06-06 16:59:17] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 16:59:17] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:29:17.641310-04:00.
+[2026-06-06 16:59:17] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 16:59:17] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 16:59:17] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 16:59:17.643503+05:30.
+[2026-06-06 16:59:17] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 16:59:17] INFO [market_bot.prepare_data_for_training:102] Prepared training dataset: X shape (3419, 29), y shape (3419,)
+[2026-06-06 16:59:17] INFO [market_bot.train:30] Starting model training for NIFTY...
+[2026-06-06 16:59:17] INFO [market_bot.train:77] --- Model Evaluation for NIFTY ---
+[2026-06-06 16:59:17] INFO [market_bot.train:78] Test Accuracy:  0.5789
+[2026-06-06 16:59:17] INFO [market_bot.train:79] Test Precision: 0.5385
+[2026-06-06 16:59:17] INFO [market_bot.train:80] Test Recall:    0.1429
+[2026-06-06 16:59:17] INFO [market_bot.train:81] Confusion Matrix:
+[[354  36]
+ [252  42]]
+[2026-06-06 16:59:17] INFO [market_bot.train:82] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 16:59:17] INFO [market_bot.save:111] Model successfully saved to models/NIFTY_model.joblib
+[2026-06-06 16:59:17] INFO [market_bot.run_train:70] Model trained and saved successfully for NIFTY.
+[2026-06-06 17:00:52] INFO [market_bot.run_train:49] --- TRAINING MODE FOR SPY ---
+[2026-06-06 17:00:52] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 17:00:52.608642-04:00 to 2026-06-06 17:00:52.608647-04:00
+[2026-06-06 17:00:52] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:00:52] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:00:52.608647-04:00...
+[2026-06-06 17:00:53] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:00:53] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:30:53.392703-04:00.
+[2026-06-06 17:00:53] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:00:53] INFO [market_bot.prepare_data_for_training:102] Prepared training dataset: X shape (3459, 27), y shape (3459,)
+[2026-06-06 17:00:53] INFO [market_bot.train:30] Starting model training for SPY...
+[2026-06-06 17:00:53] INFO [market_bot.train:55] Training subset class balance: Negative=1063, Positive=1150. Using scale_pos_weight=0.92
+[2026-06-06 17:00:53] INFO [market_bot.train:83] --- Model Evaluation for SPY ---
+[2026-06-06 17:00:53] INFO [market_bot.train:84] Test Accuracy:  0.4783
+[2026-06-06 17:00:53] INFO [market_bot.train:85] Test Precision: 0.4790
+[2026-06-06 17:00:53] INFO [market_bot.train:86] Test Recall:    0.5977
+[2026-06-06 17:00:53] INFO [market_bot.train:87] Confusion Matrix:
+[[126 223]
+ [138 205]]
+[2026-06-06 17:00:53] INFO [market_bot.train:88] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 17:00:53] INFO [market_bot.save:117] Model successfully saved to models/SPY_model.joblib
+[2026-06-06 17:00:53] INFO [market_bot.run_train:70] Model trained and saved successfully for SPY.
+[2026-06-06 17:00:55] INFO [market_bot.run_train:49] --- TRAINING MODE FOR NIFTY ---
+[2026-06-06 17:00:55] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 17:00:55.323433+05:30 to 2026-06-06 17:00:55.323437+05:30
+[2026-06-06 17:00:55] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:00:55] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:00:55.323437+05:30...
+[2026-06-06 17:00:55] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:00:55] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:00:55] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 17:00:55.323433+05:30 to 2026-06-06 17:00:55.323437+05:30
+[2026-06-06 17:00:56] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:00:56] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:00:55.323437+05:30...
+[2026-06-06 17:00:56] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:00:56] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:30:56.147853-04:00.
+[2026-06-06 17:00:56] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:00:56] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:00:56] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:00:56.150072+05:30.
+[2026-06-06 17:00:56] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:00:56] INFO [market_bot.prepare_data_for_training:102] Prepared training dataset: X shape (3419, 29), y shape (3419,)
+[2026-06-06 17:00:56] INFO [market_bot.train:30] Starting model training for NIFTY...
+[2026-06-06 17:00:56] INFO [market_bot.train:55] Training subset class balance: Negative=1185, Positive=1003. Using scale_pos_weight=1.18
+[2026-06-06 17:00:56] INFO [market_bot.train:83] --- Model Evaluation for NIFTY ---
+[2026-06-06 17:00:56] INFO [market_bot.train:84] Test Accuracy:  0.5906
+[2026-06-06 17:00:56] INFO [market_bot.train:85] Test Precision: 0.6522
+[2026-06-06 17:00:56] INFO [market_bot.train:86] Test Recall:    0.1020
+[2026-06-06 17:00:56] INFO [market_bot.train:87] Confusion Matrix:
+[[374  16]
+ [264  30]]
+[2026-06-06 17:00:56] INFO [market_bot.train:88] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 17:00:56] INFO [market_bot.save:117] Model successfully saved to models/NIFTY_model.joblib
+[2026-06-06 17:00:56] INFO [market_bot.run_train:70] Model trained and saved successfully for NIFTY.
+[2026-06-06 17:02:04] INFO [market_bot.run_train:49] --- TRAINING MODE FOR SPY ---
+[2026-06-06 17:02:04] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 17:02:04.326907-04:00 to 2026-06-06 17:02:04.326912-04:00
+[2026-06-06 17:02:04] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:02:04] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:02:04.326912-04:00...
+[2026-06-06 17:02:05] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:02:05] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:32:05.013573-04:00.
+[2026-06-06 17:02:05] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:02:05] INFO [market_bot.prepare_data_for_training:102] Prepared training dataset: X shape (3459, 27), y shape (3459,)
+[2026-06-06 17:02:05] INFO [market_bot.train:30] Starting model training for SPY...
+[2026-06-06 17:02:05] INFO [market_bot.train:55] Training subset class balance: Negative=1063, Positive=1150. Using scale_pos_weight=0.92
+[2026-06-06 17:02:05] INFO [market_bot.train:80] Using prior-adjusted decision threshold: 0.5168 for evaluation.
+[2026-06-06 17:02:05] INFO [market_bot.train:88] --- Model Evaluation for SPY ---
+[2026-06-06 17:02:05] INFO [market_bot.train:89] Test Accuracy:  0.4783
+[2026-06-06 17:02:05] INFO [market_bot.train:90] Test Precision: 0.4575
+[2026-06-06 17:02:05] INFO [market_bot.train:91] Test Recall:    0.2828
+[2026-06-06 17:02:05] INFO [market_bot.train:92] Confusion Matrix:
+[[234 115]
+ [246  97]]
+[2026-06-06 17:02:05] INFO [market_bot.train:93] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 17:02:05] INFO [market_bot.save:122] Model successfully saved to models/SPY_model.joblib
+[2026-06-06 17:02:05] INFO [market_bot.run_train:70] Model trained and saved successfully for SPY.
+[2026-06-06 17:02:06] INFO [market_bot.run_train:49] --- TRAINING MODE FOR NIFTY ---
+[2026-06-06 17:02:06] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 17:02:06.833427+05:30 to 2026-06-06 17:02:06.833432+05:30
+[2026-06-06 17:02:06] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:02:06] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:02:06.833432+05:30...
+[2026-06-06 17:02:08] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:02:08] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:02:08] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 17:02:06.833427+05:30 to 2026-06-06 17:02:06.833432+05:30
+[2026-06-06 17:02:08] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:02:08] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:02:06.833432+05:30...
+[2026-06-06 17:02:08] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:02:08] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:32:08.630634-04:00.
+[2026-06-06 17:02:08] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:02:08] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:02:08] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:02:08.633495+05:30.
+[2026-06-06 17:02:08] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:02:08] INFO [market_bot.prepare_data_for_training:102] Prepared training dataset: X shape (3419, 29), y shape (3419,)
+[2026-06-06 17:02:08] INFO [market_bot.train:30] Starting model training for NIFTY...
+[2026-06-06 17:02:08] INFO [market_bot.train:55] Training subset class balance: Negative=1185, Positive=1003. Using scale_pos_weight=1.18
+[2026-06-06 17:02:08] INFO [market_bot.train:80] Using prior-adjusted decision threshold: 0.4556 for evaluation.
+[2026-06-06 17:02:08] INFO [market_bot.train:88] --- Model Evaluation for NIFTY ---
+[2026-06-06 17:02:08] INFO [market_bot.train:89] Test Accuracy:  0.5424
+[2026-06-06 17:02:08] INFO [market_bot.train:90] Test Precision: 0.4671
+[2026-06-06 17:02:08] INFO [market_bot.train:91] Test Recall:    0.4592
+[2026-06-06 17:02:08] INFO [market_bot.train:92] Confusion Matrix:
+[[236 154]
+ [159 135]]
+[2026-06-06 17:02:08] INFO [market_bot.train:93] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 17:02:08] INFO [market_bot.save:122] Model successfully saved to models/NIFTY_model.joblib
+[2026-06-06 17:02:08] INFO [market_bot.run_train:70] Model trained and saved successfully for NIFTY.
+[2026-06-06 17:03:03] INFO [market_bot.run_train:49] --- TRAINING MODE FOR SPY ---
+[2026-06-06 17:03:03] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 17:03:03.719229-04:00 to 2026-06-06 17:03:03.719234-04:00
+[2026-06-06 17:03:03] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:03:03] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:03:03.719234-04:00...
+[2026-06-06 17:03:04] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:03:04] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:33:04.449669-04:00.
+[2026-06-06 17:03:04] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:03:04] INFO [market_bot.prepare_data_for_training:102] Prepared training dataset: X shape (3459, 27), y shape (3459,)
+[2026-06-06 17:03:04] INFO [market_bot.train:30] Starting model training for SPY...
+[2026-06-06 17:03:04] INFO [market_bot.train:55] Training subset class balance: Negative=1063, Positive=1150. Using scale_pos_weight=0.92
+[2026-06-06 17:03:04] INFO [market_bot.train:83] --- Model Evaluation for SPY ---
+[2026-06-06 17:03:04] INFO [market_bot.train:84] Test Accuracy:  0.4783
+[2026-06-06 17:03:04] INFO [market_bot.train:85] Test Precision: 0.4790
+[2026-06-06 17:03:04] INFO [market_bot.train:86] Test Recall:    0.5977
+[2026-06-06 17:03:04] INFO [market_bot.train:87] Confusion Matrix:
+[[126 223]
+ [138 205]]
+[2026-06-06 17:03:04] INFO [market_bot.train:88] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 17:03:04] INFO [market_bot.save:117] Model successfully saved to models/SPY_model.joblib
+[2026-06-06 17:03:04] INFO [market_bot.run_train:70] Model trained and saved successfully for SPY.
+[2026-06-06 17:03:06] INFO [market_bot.run_train:49] --- TRAINING MODE FOR NIFTY ---
+[2026-06-06 17:03:06] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 17:03:06.145325+05:30 to 2026-06-06 17:03:06.145329+05:30
+[2026-06-06 17:03:06] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:03:06] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:03:06.145329+05:30...
+[2026-06-06 17:03:08] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:03:08] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:03:08] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 17:03:06.145325+05:30 to 2026-06-06 17:03:06.145329+05:30
+[2026-06-06 17:03:08] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:03:08] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:03:06.145329+05:30...
+[2026-06-06 17:03:08] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:03:08] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:33:08.821312-04:00.
+[2026-06-06 17:03:08] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:03:08] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:03:08] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:03:08.823640+05:30.
+[2026-06-06 17:03:08] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:03:08] INFO [market_bot.prepare_data_for_training:102] Prepared training dataset: X shape (3419, 29), y shape (3419,)
+[2026-06-06 17:03:08] INFO [market_bot.train:30] Starting model training for NIFTY...
+[2026-06-06 17:03:08] INFO [market_bot.train:55] Training subset class balance: Negative=1185, Positive=1003. Using scale_pos_weight=1.18
+[2026-06-06 17:03:08] INFO [market_bot.train:83] --- Model Evaluation for NIFTY ---
+[2026-06-06 17:03:08] INFO [market_bot.train:84] Test Accuracy:  0.5906
+[2026-06-06 17:03:08] INFO [market_bot.train:85] Test Precision: 0.6522
+[2026-06-06 17:03:08] INFO [market_bot.train:86] Test Recall:    0.1020
+[2026-06-06 17:03:08] INFO [market_bot.train:87] Confusion Matrix:
+[[374  16]
+ [264  30]]
+[2026-06-06 17:03:08] INFO [market_bot.train:88] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 17:03:08] INFO [market_bot.save:117] Model successfully saved to models/NIFTY_model.joblib
+[2026-06-06 17:03:08] INFO [market_bot.run_train:70] Model trained and saved successfully for NIFTY.
+[2026-06-06 17:05:19] INFO [market_bot.prepare_data_for_training:102] Prepared training dataset: X shape (250, 27), y shape (250,)
+[2026-06-06 17:05:19] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 98.00, Trigger Price: 98.00
+[2026-06-06 17:05:19] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 97.90, Trigger Price: 98.00
+[2026-06-06 17:05:19] INFO [market_bot.can_open_position:42] Trade limit reached for today: 3 trades executed. Max limit is 3.
+[2026-06-06 17:05:19] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 17:05:19] INFO [market_bot.can_open_position:47] Cannot open new position: Daily loss limit is breached.
+[2026-06-06 17:05:19] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 17:05:25] INFO [market_bot.run_train:49] --- TRAINING MODE FOR SPY ---
+[2026-06-06 17:05:25] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 17:05:25.876385-04:00 to 2026-06-06 17:05:25.876391-04:00
+[2026-06-06 17:05:25] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:05:25] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:05:25.876391-04:00...
+[2026-06-06 17:05:26] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:05:26] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:35:26.680835-04:00.
+[2026-06-06 17:05:26] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:05:26] INFO [market_bot.prepare_data_for_training:102] Prepared training dataset: X shape (3459, 27), y shape (3459,)
+[2026-06-06 17:05:26] INFO [market_bot.train:30] Starting model training for SPY...
+[2026-06-06 17:05:26] INFO [market_bot.train:54] Prioritizing high precision. Using scale_pos_weight=0.70
+[2026-06-06 17:05:26] INFO [market_bot.train:82] --- Model Evaluation for SPY ---
+[2026-06-06 17:05:26] INFO [market_bot.train:83] Test Accuracy:  0.4711
+[2026-06-06 17:05:26] INFO [market_bot.train:84] Test Precision: 0.4740
+[2026-06-06 17:05:26] INFO [market_bot.train:85] Test Recall:    0.6122
+[2026-06-06 17:05:26] INFO [market_bot.train:86] Confusion Matrix:
+[[116 233]
+ [133 210]]
+[2026-06-06 17:05:26] INFO [market_bot.train:87] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 17:05:26] INFO [market_bot.save:116] Model successfully saved to models/SPY_model.joblib
+[2026-06-06 17:05:26] INFO [market_bot.run_train:70] Model trained and saved successfully for SPY.
+[2026-06-06 17:05:28] INFO [market_bot.run_train:49] --- TRAINING MODE FOR NIFTY ---
+[2026-06-06 17:05:28] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 17:05:28.893699+05:30 to 2026-06-06 17:05:28.893704+05:30
+[2026-06-06 17:05:28] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:05:28] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:05:28.893704+05:30...
+[2026-06-06 17:05:29] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:05:29] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:05:29] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 17:05:28.893699+05:30 to 2026-06-06 17:05:28.893704+05:30
+[2026-06-06 17:05:29] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:05:29] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:05:28.893704+05:30...
+[2026-06-06 17:05:29] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:05:29] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:35:29.817656-04:00.
+[2026-06-06 17:05:29] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:05:29] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:05:29] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:05:29.819660+05:30.
+[2026-06-06 17:05:29] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:05:29] INFO [market_bot.prepare_data_for_training:102] Prepared training dataset: X shape (3419, 29), y shape (3419,)
+[2026-06-06 17:05:29] INFO [market_bot.train:30] Starting model training for NIFTY...
+[2026-06-06 17:05:29] INFO [market_bot.train:54] Prioritizing high precision. Using scale_pos_weight=0.70
+[2026-06-06 17:05:29] INFO [market_bot.train:82] --- Model Evaluation for NIFTY ---
+[2026-06-06 17:05:29] INFO [market_bot.train:83] Test Accuracy:  0.5599
+[2026-06-06 17:05:29] INFO [market_bot.train:84] Test Precision: 0.4809
+[2026-06-06 17:05:29] INFO [market_bot.train:85] Test Recall:    0.2993
+[2026-06-06 17:05:29] INFO [market_bot.train:86] Confusion Matrix:
+[[295  95]
+ [206  88]]
+[2026-06-06 17:05:29] INFO [market_bot.train:87] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 17:05:29] INFO [market_bot.save:116] Model successfully saved to models/NIFTY_model.joblib
+[2026-06-06 17:05:29] INFO [market_bot.run_train:70] Model trained and saved successfully for NIFTY.
+[2026-06-06 17:08:31] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (250, 30), y shape (250,)
+[2026-06-06 17:08:31] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 98.00, Trigger Price: 98.00
+[2026-06-06 17:08:31] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 97.90, Trigger Price: 98.00
+[2026-06-06 17:08:31] INFO [market_bot.can_open_position:42] Trade limit reached for today: 3 trades executed. Max limit is 3.
+[2026-06-06 17:08:31] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 17:08:31] INFO [market_bot.can_open_position:47] Cannot open new position: Daily loss limit is breached.
+[2026-06-06 17:08:31] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 17:08:37] INFO [market_bot.run_train:49] --- TRAINING MODE FOR SPY ---
+[2026-06-06 17:08:37] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 17:08:37.580793-04:00 to 2026-06-06 17:08:37.580798-04:00
+[2026-06-06 17:08:37] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:08:37] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:08:37.580798-04:00...
+[2026-06-06 17:08:38] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:08:38] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:38:38.318486-04:00.
+[2026-06-06 17:08:38] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:08:38] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3459, 30), y shape (3459,)
+[2026-06-06 17:08:38] INFO [market_bot.train:30] Starting model training for SPY...
+[2026-06-06 17:08:38] INFO [market_bot.train:54] Prioritizing high precision. Using scale_pos_weight=0.70
+[2026-06-06 17:08:38] INFO [market_bot.train:82] --- Model Evaluation for SPY ---
+[2026-06-06 17:08:38] INFO [market_bot.train:83] Test Accuracy:  0.4769
+[2026-06-06 17:08:38] INFO [market_bot.train:84] Test Precision: 0.4761
+[2026-06-06 17:08:38] INFO [market_bot.train:85] Test Recall:    0.5510
+[2026-06-06 17:08:38] INFO [market_bot.train:86] Confusion Matrix:
+[[141 208]
+ [154 189]]
+[2026-06-06 17:08:38] INFO [market_bot.train:87] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 17:08:38] INFO [market_bot.save:116] Model successfully saved to models/SPY_model.joblib
+[2026-06-06 17:08:38] INFO [market_bot.run_train:70] Model trained and saved successfully for SPY.
+[2026-06-06 17:08:40] INFO [market_bot.run_train:49] --- TRAINING MODE FOR NIFTY ---
+[2026-06-06 17:08:40] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 17:08:40.351216+05:30 to 2026-06-06 17:08:40.351222+05:30
+[2026-06-06 17:08:40] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:08:40] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:08:40.351222+05:30...
+[2026-06-06 17:08:40] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:08:40] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:08:40] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 17:08:40.351216+05:30 to 2026-06-06 17:08:40.351222+05:30
+[2026-06-06 17:08:41] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:08:41] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:08:40.351222+05:30...
+[2026-06-06 17:08:41] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:08:41] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:38:41.155636-04:00.
+[2026-06-06 17:08:41] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:08:41] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:08:41] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:08:41.157554+05:30.
+[2026-06-06 17:08:41] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:08:41] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3419, 32), y shape (3419,)
+[2026-06-06 17:08:41] INFO [market_bot.train:30] Starting model training for NIFTY...
+[2026-06-06 17:08:41] INFO [market_bot.train:54] Prioritizing high precision. Using scale_pos_weight=0.70
+[2026-06-06 17:08:41] INFO [market_bot.train:82] --- Model Evaluation for NIFTY ---
+[2026-06-06 17:08:41] INFO [market_bot.train:83] Test Accuracy:  0.5965
+[2026-06-06 17:08:41] INFO [market_bot.train:84] Test Precision: 0.6125
+[2026-06-06 17:08:41] INFO [market_bot.train:85] Test Recall:    0.1667
+[2026-06-06 17:08:41] INFO [market_bot.train:86] Confusion Matrix:
+[[359  31]
+ [245  49]]
+[2026-06-06 17:08:41] INFO [market_bot.train:87] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 17:08:41] INFO [market_bot.save:116] Model successfully saved to models/NIFTY_model.joblib
+[2026-06-06 17:08:41] INFO [market_bot.run_train:70] Model trained and saved successfully for NIFTY.
+[2026-06-06 17:11:10] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (250, 30), y shape (250,)
+[2026-06-06 17:11:10] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 98.00, Trigger Price: 98.00
+[2026-06-06 17:11:10] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 97.90, Trigger Price: 98.00
+[2026-06-06 17:11:10] INFO [market_bot.can_open_position:42] Trade limit reached for today: 3 trades executed. Max limit is 3.
+[2026-06-06 17:11:10] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 17:11:10] INFO [market_bot.can_open_position:47] Cannot open new position: Daily loss limit is breached.
+[2026-06-06 17:11:10] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 17:11:14] INFO [market_bot.run_train:49] --- TRAINING MODE FOR SPY ---
+[2026-06-06 17:11:14] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 17:11:14.968094-04:00 to 2026-06-06 17:11:14.968100-04:00
+[2026-06-06 17:11:15] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:11:15] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:11:14.968100-04:00...
+[2026-06-06 17:11:15] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:11:15] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:41:15.865909-04:00.
+[2026-06-06 17:11:15] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:11:15] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3459, 30), y shape (3459,)
+[2026-06-06 17:11:15] INFO [market_bot.train:30] Starting model training for SPY...
+[2026-06-06 17:11:15] INFO [market_bot.train:54] Prioritizing high precision. Using scale_pos_weight=0.70
+[2026-06-06 17:11:15] INFO [market_bot.train:93] --- Model Evaluation for SPY ---
+[2026-06-06 17:11:15] INFO [market_bot.train:94] Test Accuracy:  0.4581
+[2026-06-06 17:11:15] INFO [market_bot.train:95] Test Precision: 0.4556
+[2026-06-06 17:11:15] INFO [market_bot.train:96] Test Recall:    0.4781
+[2026-06-06 17:11:15] INFO [market_bot.train:97] Confusion Matrix:
+[[153 196]
+ [179 164]]
+[2026-06-06 17:11:15] INFO [market_bot.train:98] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 17:11:15] INFO [market_bot.save:127] Model successfully saved to models/SPY_model.joblib
+[2026-06-06 17:11:15] INFO [market_bot.run_train:70] Model trained and saved successfully for SPY.
+[2026-06-06 17:11:17] INFO [market_bot.run_train:49] --- TRAINING MODE FOR NIFTY ---
+[2026-06-06 17:11:17] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 17:11:17.534409+05:30 to 2026-06-06 17:11:17.534414+05:30
+[2026-06-06 17:11:17] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:11:17] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:11:17.534414+05:30...
+[2026-06-06 17:11:20] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:11:20] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:11:20] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 17:11:17.534409+05:30 to 2026-06-06 17:11:17.534414+05:30
+[2026-06-06 17:11:20] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:11:20] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:11:17.534414+05:30...
+[2026-06-06 17:11:20] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:11:20] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:41:20.307713-04:00.
+[2026-06-06 17:11:20] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:11:20] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:11:20] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:11:20.309939+05:30.
+[2026-06-06 17:11:20] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:11:20] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3419, 32), y shape (3419,)
+[2026-06-06 17:11:20] INFO [market_bot.train:30] Starting model training for NIFTY...
+[2026-06-06 17:11:20] INFO [market_bot.train:54] Prioritizing high precision. Using scale_pos_weight=0.70
+[2026-06-06 17:11:20] INFO [market_bot.train:93] --- Model Evaluation for NIFTY ---
+[2026-06-06 17:11:20] INFO [market_bot.train:94] Test Accuracy:  0.5702
+[2026-06-06 17:11:20] INFO [market_bot.train:95] Test Precision: 0.5000
+[2026-06-06 17:11:20] INFO [market_bot.train:96] Test Recall:    0.4116
+[2026-06-06 17:11:20] INFO [market_bot.train:97] Confusion Matrix:
+[[269 121]
+ [173 121]]
+[2026-06-06 17:11:20] INFO [market_bot.train:98] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 17:11:20] INFO [market_bot.save:127] Model successfully saved to models/NIFTY_model.joblib
+[2026-06-06 17:11:20] INFO [market_bot.run_train:70] Model trained and saved successfully for NIFTY.
+[2026-06-06 17:12:36] INFO [market_bot.run_train:49] --- TRAINING MODE FOR SPY ---
+[2026-06-06 17:12:36] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 17:12:36.688430-04:00 to 2026-06-06 17:12:36.688435-04:00
+[2026-06-06 17:12:36] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:12:36] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:12:36.688435-04:00...
+[2026-06-06 17:12:45] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:12:45] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:42:45.531217-04:00.
+[2026-06-06 17:12:45] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:12:45] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3459, 30), y shape (3459,)
+[2026-06-06 17:12:45] INFO [market_bot.train:30] Starting model training for SPY...
+[2026-06-06 17:12:45] INFO [market_bot.train:55] Prioritizing high precision. Using scale_pos_weight=0.50
+[2026-06-06 17:12:45] INFO [market_bot.train:94] --- Model Evaluation for SPY ---
+[2026-06-06 17:12:45] INFO [market_bot.train:95] Test Accuracy:  0.4639
+[2026-06-06 17:12:45] INFO [market_bot.train:96] Test Precision: 0.4671
+[2026-06-06 17:12:45] INFO [market_bot.train:97] Test Recall:    0.5802
+[2026-06-06 17:12:45] INFO [market_bot.train:98] Confusion Matrix:
+[[122 227]
+ [144 199]]
+[2026-06-06 17:12:45] INFO [market_bot.train:99] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 17:12:45] INFO [market_bot.save:128] Model successfully saved to models/SPY_model.joblib
+[2026-06-06 17:12:45] INFO [market_bot.run_train:70] Model trained and saved successfully for SPY.
+[2026-06-06 17:12:47] INFO [market_bot.run_train:49] --- TRAINING MODE FOR NIFTY ---
+[2026-06-06 17:12:47] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 17:12:47.286528+05:30 to 2026-06-06 17:12:47.286532+05:30
+[2026-06-06 17:12:47] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:12:47] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:12:47.286532+05:30...
+[2026-06-06 17:12:48] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:12:48] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:12:48] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 17:12:47.286528+05:30 to 2026-06-06 17:12:47.286532+05:30
+[2026-06-06 17:12:48] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:12:48] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:12:47.286532+05:30...
+[2026-06-06 17:12:48] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:12:48] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:42:48.565419-04:00.
+[2026-06-06 17:12:48] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:12:48] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:12:48] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:12:48.567191+05:30.
+[2026-06-06 17:12:48] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:12:48] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3419, 32), y shape (3419,)
+[2026-06-06 17:12:48] INFO [market_bot.train:30] Starting model training for NIFTY...
+[2026-06-06 17:12:48] INFO [market_bot.train:55] Prioritizing high precision. Using scale_pos_weight=0.50
+[2026-06-06 17:12:48] INFO [market_bot.train:94] --- Model Evaluation for NIFTY ---
+[2026-06-06 17:12:48] INFO [market_bot.train:95] Test Accuracy:  0.5541
+[2026-06-06 17:12:48] INFO [market_bot.train:96] Test Precision: 0.4433
+[2026-06-06 17:12:48] INFO [market_bot.train:97] Test Recall:    0.1463
+[2026-06-06 17:12:48] INFO [market_bot.train:98] Confusion Matrix:
+[[336  54]
+ [251  43]]
+[2026-06-06 17:12:48] INFO [market_bot.train:99] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 17:12:48] INFO [market_bot.save:128] Model successfully saved to models/NIFTY_model.joblib
+[2026-06-06 17:12:48] INFO [market_bot.run_train:70] Model trained and saved successfully for NIFTY.
+[2026-06-06 17:16:57] INFO [market_bot.run_train:49] --- TRAINING MODE FOR SPY ---
+[2026-06-06 17:16:57] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 17:16:57.864651-04:00 to 2026-06-06 17:16:57.864656-04:00
+[2026-06-06 17:16:57] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:16:57] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:16:57.864656-04:00...
+[2026-06-06 17:16:58] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:16:58] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:46:58.744646-04:00.
+[2026-06-06 17:16:58] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:16:58] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3459, 30), y shape (3459,)
+[2026-06-06 17:16:58] INFO [market_bot.train:30] Starting model training for SPY...
+[2026-06-06 17:16:58] INFO [market_bot.train:55] Prioritizing high precision. Training subset class balance: Negative=1063, Positive=1150. Using scale_pos_weight=0.92
+[2026-06-06 17:16:58] INFO [market_bot.train:94] --- Model Evaluation for SPY ---
+[2026-06-06 17:16:58] INFO [market_bot.train:95] Test Accuracy:  0.4827
+[2026-06-06 17:16:58] INFO [market_bot.train:96] Test Precision: 0.4828
+[2026-06-06 17:16:58] INFO [market_bot.train:97] Test Recall:    0.6122
+[2026-06-06 17:16:58] INFO [market_bot.train:98] Confusion Matrix:
+[[124 225]
+ [133 210]]
+[2026-06-06 17:16:58] INFO [market_bot.train:99] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 17:16:58] INFO [market_bot.save:128] Model successfully saved to models/SPY_model.joblib
+[2026-06-06 17:16:58] INFO [market_bot.run_train:70] Model trained and saved successfully for SPY.
+[2026-06-06 17:17:03] INFO [market_bot.run_train:49] --- TRAINING MODE FOR NIFTY ---
+[2026-06-06 17:17:03] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 17:17:03.942604+05:30 to 2026-06-06 17:17:03.942608+05:30
+[2026-06-06 17:17:03] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:17:03] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:17:03.942608+05:30...
+[2026-06-06 17:17:05] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:17:05] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:17:05] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 17:17:03.942604+05:30 to 2026-06-06 17:17:03.942608+05:30
+[2026-06-06 17:17:05] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:17:05] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:17:03.942608+05:30...
+[2026-06-06 17:17:05] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:17:05] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:47:05.370756-04:00.
+[2026-06-06 17:17:05] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:17:05] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:17:05] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:17:05.372904+05:30.
+[2026-06-06 17:17:05] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:17:05] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3419, 32), y shape (3419,)
+[2026-06-06 17:17:05] INFO [market_bot.train:30] Starting model training for NIFTY...
+[2026-06-06 17:17:05] INFO [market_bot.train:55] Prioritizing high precision. Training subset class balance: Negative=1185, Positive=1003. Using scale_pos_weight=1.18
+[2026-06-06 17:17:05] INFO [market_bot.train:94] --- Model Evaluation for NIFTY ---
+[2026-06-06 17:17:05] INFO [market_bot.train:95] Test Accuracy:  0.5365
+[2026-06-06 17:17:05] INFO [market_bot.train:96] Test Precision: 0.4034
+[2026-06-06 17:17:05] INFO [market_bot.train:97] Test Recall:    0.1633
+[2026-06-06 17:17:05] INFO [market_bot.train:98] Confusion Matrix:
+[[319  71]
+ [246  48]]
+[2026-06-06 17:17:05] INFO [market_bot.train:99] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 17:17:05] INFO [market_bot.save:128] Model successfully saved to models/NIFTY_model.joblib
+[2026-06-06 17:17:05] INFO [market_bot.run_train:70] Model trained and saved successfully for NIFTY.
+[2026-06-06 17:17:09] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (250, 30), y shape (250,)
+[2026-06-06 17:17:09] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 98.00, Trigger Price: 98.00
+[2026-06-06 17:17:09] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 97.90, Trigger Price: 98.00
+[2026-06-06 17:17:09] INFO [market_bot.can_open_position:42] Trade limit reached for today: 3 trades executed. Max limit is 3.
+[2026-06-06 17:17:09] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 17:17:09] INFO [market_bot.can_open_position:47] Cannot open new position: Daily loss limit is breached.
+[2026-06-06 17:17:09] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 17:17:57] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 07:47:57.159575-04:00 to 2026-06-06 07:47:57.159575-04:00
+[2026-06-06 17:17:57] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:17:57] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 07:47:57.159575-04:00...
+[2026-06-06 17:17:58] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:17:58] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:47:58.379305-04:00.
+[2026-06-06 17:17:58] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:17:58] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3459, 30), y shape (3459,)
+[2026-06-06 17:18:09] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 07:48:09.269267-04:00 to 2026-06-06 07:48:09.269267-04:00
+[2026-06-06 17:18:09] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:18:09] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 07:48:09.269267-04:00...
+[2026-06-06 17:18:10] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:18:10] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:48:10.481547-04:00.
+[2026-06-06 17:18:10] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:18:10] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3459, 30), y shape (3459,)
+[2026-06-06 17:18:10] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 17:18:10.541264+05:30 to 2026-06-06 17:18:10.541264+05:30
+[2026-06-06 17:18:10] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:18:10] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:18:10.541264+05:30...
+[2026-06-06 17:18:10] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:18:10] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:18:10] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 17:18:10.541264+05:30 to 2026-06-06 17:18:10.541264+05:30
+[2026-06-06 17:18:10] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:18:10] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:18:10.541264+05:30...
+[2026-06-06 17:18:10] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:18:10] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:48:10.845074-04:00.
+[2026-06-06 17:18:10] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:18:10] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:18:10] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:18:10.846636+05:30.
+[2026-06-06 17:18:10] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:18:10] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3419, 32), y shape (3419,)
+[2026-06-06 17:18:20] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 07:48:20.109053-04:00 to 2026-06-06 07:48:20.109053-04:00
+[2026-06-06 17:18:20] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:18:20] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 07:48:20.109053-04:00...
+[2026-06-06 17:18:21] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:18:21] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:48:21.793988-04:00.
+[2026-06-06 17:18:21] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:18:21] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3459, 30), y shape (3459,)
+[2026-06-06 17:18:21] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 17:18:21.862921+05:30 to 2026-06-06 17:18:21.862921+05:30
+[2026-06-06 17:18:21] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:18:21] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:18:21.862921+05:30...
+[2026-06-06 17:18:22] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:18:22] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:18:22] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 17:18:21.862921+05:30 to 2026-06-06 17:18:21.862921+05:30
+[2026-06-06 17:18:22] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:18:22] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:18:21.862921+05:30...
+[2026-06-06 17:18:22] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:18:22] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:48:22.294540-04:00.
+[2026-06-06 17:18:22] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:18:22] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:18:22] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:18:22.296112+05:30.
+[2026-06-06 17:18:22] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:18:22] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3419, 32), y shape (3419,)
+[2026-06-06 17:18:27] INFO [market_bot.run_backtest:73] --- BACKTEST MODE FOR NIFTY ---
+[2026-06-06 17:18:27] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 17:18:27.038608+05:30 to 2026-06-06 17:18:27.038614+05:30
+[2026-06-06 17:18:27] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:18:27] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:18:27.038614+05:30...
+[2026-06-06 17:18:27] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:18:27] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:18:27] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 17:18:27.038608+05:30 to 2026-06-06 17:18:27.038614+05:30
+[2026-06-06 17:18:27] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:18:27] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:18:27.038614+05:30...
+[2026-06-06 17:18:28] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:18:28] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:48:28.082681-04:00.
+[2026-06-06 17:18:28] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:18:28] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:18:28] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:18:28.084613+05:30.
+[2026-06-06 17:18:28] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:18:28] INFO [market_bot.load:143] Loaded trained model for NIFTY from models/NIFTY_model.joblib
+[2026-06-06 17:18:28] INFO [market_bot.run_backtest:96] Running ML-guided strategy backtest...
+[2026-06-06 17:18:28] INFO [market_bot.run_backtest:28] Starting backtest for NIFTY (INDIA market) on 3419 candles...
+[2026-06-06 17:18:31] INFO [market_bot.run_backtest:347] Backtest completed. Final Capital: 99972.72, Trades: 7, Win Rate: 42.86%, Max Drawdown: -0.16%
+[2026-06-06 17:18:31] INFO [market_bot.run_backtest:103] Running Rule-only baseline backtest...
+[2026-06-06 17:18:31] INFO [market_bot.run_backtest:28] Starting backtest for NIFTY (INDIA market) on 3419 candles...
+[2026-06-06 17:18:31] INFO [market_bot.run_backtest:347] Backtest completed. Final Capital: 100000.00, Trades: 0, Win Rate: 0.00%, Max Drawdown: 0.00%
+[2026-06-06 17:18:40] INFO [market_bot.run_backtest:73] --- BACKTEST MODE FOR SPY ---
+[2026-06-06 17:18:40] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 17:18:40.154208-04:00 to 2026-06-06 17:18:40.154213-04:00
+[2026-06-06 17:18:40] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:18:40] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:18:40.154213-04:00...
+[2026-06-06 17:18:42] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:18:42] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:48:42.223222-04:00.
+[2026-06-06 17:18:42] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:18:42] INFO [market_bot.load:143] Loaded trained model for SPY from models/SPY_model.joblib
+[2026-06-06 17:18:42] INFO [market_bot.run_backtest:96] Running ML-guided strategy backtest...
+[2026-06-06 17:18:42] INFO [market_bot.run_backtest:28] Starting backtest for SPY (US market) on 3459 candles...
+[2026-06-06 17:18:45] INFO [market_bot.run_backtest:347] Backtest completed. Final Capital: 100000.00, Trades: 0, Win Rate: 0.00%, Max Drawdown: 0.00%
+[2026-06-06 17:18:45] INFO [market_bot.run_backtest:103] Running Rule-only baseline backtest...
+[2026-06-06 17:18:45] INFO [market_bot.run_backtest:28] Starting backtest for SPY (US market) on 3459 candles...
+[2026-06-06 17:18:45] INFO [market_bot.run_backtest:347] Backtest completed. Final Capital: 100000.00, Trades: 0, Win Rate: 0.00%, Max Drawdown: 0.00%
+[2026-06-06 17:19:01] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 07:49:01.325943-04:00 to 2026-06-06 07:49:01.325943-04:00
+[2026-06-06 17:19:01] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:19:01] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 07:49:01.325943-04:00...
+[2026-06-06 17:19:02] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:19:02] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:49:02.192212-04:00.
+[2026-06-06 17:19:02] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:19:02] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3459, 30), y shape (3459,)
+[2026-06-06 17:19:02] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 17:19:02.305106+05:30 to 2026-06-06 17:19:02.305106+05:30
+[2026-06-06 17:19:02] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:19:02] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:19:02.305106+05:30...
+[2026-06-06 17:19:02] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:19:02] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:19:02] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 17:19:02.305106+05:30 to 2026-06-06 17:19:02.305106+05:30
+[2026-06-06 17:19:02] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:19:02] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:19:02.305106+05:30...
+[2026-06-06 17:19:02] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:19:02] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:49:02.877171-04:00.
+[2026-06-06 17:19:02] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:19:02] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:19:02] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:19:02.878972+05:30.
+[2026-06-06 17:19:02] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:19:02] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3419, 32), y shape (3419,)
+[2026-06-06 17:19:12] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 07:49:12.291561-04:00 to 2026-06-06 07:49:12.291561-04:00
+[2026-06-06 17:19:12] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:19:12] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 07:49:12.291561-04:00...
+[2026-06-06 17:19:13] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:19:13] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:49:13.604143-04:00.
+[2026-06-06 17:19:13] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:19:13] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3459, 30), y shape (3459,)
+[2026-06-06 17:19:22] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 07:49:22.420589-04:00 to 2026-06-06 07:49:22.420589-04:00
+[2026-06-06 17:19:22] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:19:22] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 07:49:22.420589-04:00...
+[2026-06-06 17:19:23] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:19:23] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:49:23.322044-04:00.
+[2026-06-06 17:19:23] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:19:23] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3459, 30), y shape (3459,)
+[2026-06-06 17:19:23] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 17:19:23.404895+05:30 to 2026-06-06 17:19:23.404895+05:30
+[2026-06-06 17:19:23] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:19:23] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:19:23.404895+05:30...
+[2026-06-06 17:19:23] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:19:23] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:19:23] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 17:19:23.404895+05:30 to 2026-06-06 17:19:23.404895+05:30
+[2026-06-06 17:19:23] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:19:23] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:19:23.404895+05:30...
+[2026-06-06 17:19:23] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:19:23] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:49:23.729015-04:00.
+[2026-06-06 17:19:23] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:19:23] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:19:23] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:19:23.731466+05:30.
+[2026-06-06 17:19:23] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:19:23] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3419, 32), y shape (3419,)
+[2026-06-06 17:19:31] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 07:49:30.999983-04:00 to 2026-06-06 07:49:30.999983-04:00
+[2026-06-06 17:19:31] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:19:31] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 07:49:30.999983-04:00...
+[2026-06-06 17:19:31] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:19:31] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:49:31.883982-04:00.
+[2026-06-06 17:19:31] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:19:31] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3459, 30), y shape (3459,)
+[2026-06-06 17:19:31] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 17:19:31.943893+05:30 to 2026-06-06 17:19:31.943893+05:30
+[2026-06-06 17:19:31] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:19:31] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:19:31.943893+05:30...
+[2026-06-06 17:19:32] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:19:32] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:19:32] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 17:19:31.943893+05:30 to 2026-06-06 17:19:31.943893+05:30
+[2026-06-06 17:19:32] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:19:32] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:19:31.943893+05:30...
+[2026-06-06 17:19:32] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:19:32] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:49:32.288739-04:00.
+[2026-06-06 17:19:32] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:19:32] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:19:32] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:19:32.290633+05:30.
+[2026-06-06 17:19:32] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:19:32] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3419, 32), y shape (3419,)
+[2026-06-06 17:19:39] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 07:49:39.582028-04:00 to 2026-06-06 07:49:39.582028-04:00
+[2026-06-06 17:19:39] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:19:39] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 07:49:39.582028-04:00...
+[2026-06-06 17:19:40] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:19:40] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:49:40.570407-04:00.
+[2026-06-06 17:19:40] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:19:40] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3459, 30), y shape (3459,)
+[2026-06-06 17:19:41] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 17:19:41.135953+05:30 to 2026-06-06 17:19:41.135953+05:30
+[2026-06-06 17:19:41] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:19:41] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:19:41.135953+05:30...
+[2026-06-06 17:19:41] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:19:41] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:19:41] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 17:19:41.135953+05:30 to 2026-06-06 17:19:41.135953+05:30
+[2026-06-06 17:19:41] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:19:41] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:19:41.135953+05:30...
+[2026-06-06 17:19:41] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:19:41] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:49:41.482490-04:00.
+[2026-06-06 17:19:41] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:19:41] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:19:41] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:19:41.484211+05:30.
+[2026-06-06 17:19:41] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:19:41] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3419, 32), y shape (3419,)
+[2026-06-06 17:19:52] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 07:49:52.006171-04:00 to 2026-06-06 07:49:52.006171-04:00
+[2026-06-06 17:19:52] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:19:52] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 07:49:52.006171-04:00...
+[2026-06-06 17:19:52] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:19:52] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:49:52.655403-04:00.
+[2026-06-06 17:19:52] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:19:52] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3459, 30), y shape (3459,)
+[2026-06-06 17:19:52] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 17:19:52.800781+05:30 to 2026-06-06 17:19:52.800781+05:30
+[2026-06-06 17:19:52] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:19:52] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:19:52.800781+05:30...
+[2026-06-06 17:19:52] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:19:52] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:19:52] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 17:19:52.800781+05:30 to 2026-06-06 17:19:52.800781+05:30
+[2026-06-06 17:19:52] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:19:52] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:19:52.800781+05:30...
+[2026-06-06 17:19:53] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:19:53] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:49:53.045881-04:00.
+[2026-06-06 17:19:53] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:19:53] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:19:53] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:19:53.047577+05:30.
+[2026-06-06 17:19:53] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:19:53] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3419, 32), y shape (3419,)
+[2026-06-06 17:20:08] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 07:50:08.994579-04:00 to 2026-06-06 07:50:08.994579-04:00
+[2026-06-06 17:20:09] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:20:09] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 07:50:08.994579-04:00...
+[2026-06-06 17:20:09] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:20:09] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:50:09.658504-04:00.
+[2026-06-06 17:20:09] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:20:09] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3459, 30), y shape (3459,)
+[2026-06-06 17:20:10] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 17:20:10.132315+05:30 to 2026-06-06 17:20:10.132315+05:30
+[2026-06-06 17:20:10] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:20:10] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:20:10.132315+05:30...
+[2026-06-06 17:20:10] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:20:10] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:20:10] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 17:20:10.132315+05:30 to 2026-06-06 17:20:10.132315+05:30
+[2026-06-06 17:20:10] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:20:10] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:20:10.132315+05:30...
+[2026-06-06 17:20:10] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:20:10] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:50:10.451409-04:00.
+[2026-06-06 17:20:10] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:20:10] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:20:10] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:20:10.453102+05:30.
+[2026-06-06 17:20:10] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:20:10] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3419, 32), y shape (3419,)
+[2026-06-06 17:20:42] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 07:50:42.253648-04:00 to 2026-06-06 07:50:42.253648-04:00
+[2026-06-06 17:20:42] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:20:42] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 07:50:42.253648-04:00...
+[2026-06-06 17:20:46] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:20:46] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:50:46.155701-04:00.
+[2026-06-06 17:20:46] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:20:46] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3459, 30), y shape (3459,)
+[2026-06-06 17:20:46] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 17:20:46.351617+05:30 to 2026-06-06 17:20:46.351617+05:30
+[2026-06-06 17:20:46] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:20:46] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:20:46.351617+05:30...
+[2026-06-06 17:20:46] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:20:46] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:20:46] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 17:20:46.351617+05:30 to 2026-06-06 17:20:46.351617+05:30
+[2026-06-06 17:20:46] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:20:46] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:20:46.351617+05:30...
+[2026-06-06 17:20:46] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:20:46] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:50:46.767651-04:00.
+[2026-06-06 17:20:46] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:20:46] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:20:46] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:20:46.769547+05:30.
+[2026-06-06 17:20:46] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:20:46] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3419, 32), y shape (3419,)
+[2026-06-06 17:20:58] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 07:50:58.344319-04:00 to 2026-06-06 07:50:58.344319-04:00
+[2026-06-06 17:20:58] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:20:58] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 07:50:58.344319-04:00...
+[2026-06-06 17:20:59] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:20:59] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:50:59.107093-04:00.
+[2026-06-06 17:20:59] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:20:59] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3459, 30), y shape (3459,)
+[2026-06-06 17:20:59] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 17:20:59.305183+05:30 to 2026-06-06 17:20:59.305183+05:30
+[2026-06-06 17:20:59] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:20:59] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:20:59.305183+05:30...
+[2026-06-06 17:20:59] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:20:59] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:20:59] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 17:20:59.305183+05:30 to 2026-06-06 17:20:59.305183+05:30
+[2026-06-06 17:20:59] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:20:59] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:20:59.305183+05:30...
+[2026-06-06 17:20:59] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:20:59] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:50:59.723182-04:00.
+[2026-06-06 17:20:59] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:20:59] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:20:59] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:20:59.725037+05:30.
+[2026-06-06 17:20:59] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:20:59] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3419, 32), y shape (3419,)
+[2026-06-06 17:21:09] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 07:51:09.370051-04:00 to 2026-06-06 07:51:09.370051-04:00
+[2026-06-06 17:21:09] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:21:09] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 07:51:09.370051-04:00...
+[2026-06-06 17:21:10] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:21:10] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:51:10.426443-04:00.
+[2026-06-06 17:21:10] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:21:10] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3459, 30), y shape (3459,)
+[2026-06-06 17:21:10] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 17:21:10.548550+05:30 to 2026-06-06 17:21:10.548550+05:30
+[2026-06-06 17:21:10] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:21:10] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:21:10.548550+05:30...
+[2026-06-06 17:21:10] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:21:10] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:21:10] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 17:21:10.548550+05:30 to 2026-06-06 17:21:10.548550+05:30
+[2026-06-06 17:21:10] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:21:10] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:21:10.548550+05:30...
+[2026-06-06 17:21:10] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:21:10] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:51:10.926153-04:00.
+[2026-06-06 17:21:10] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:21:10] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:21:10] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:21:10.928154+05:30.
+[2026-06-06 17:21:10] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:21:10] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3419, 32), y shape (3419,)
+[2026-06-06 17:21:21] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 07:51:21.479779-04:00 to 2026-06-06 07:51:21.479779-04:00
+[2026-06-06 17:21:21] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:21:21] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 07:51:21.479779-04:00...
+[2026-06-06 17:21:22] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:21:22] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:51:22.165525-04:00.
+[2026-06-06 17:21:22] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:21:22] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3459, 30), y shape (3459,)
+[2026-06-06 17:21:22] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 17:21:22.320170+05:30 to 2026-06-06 17:21:22.320170+05:30
+[2026-06-06 17:21:22] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:21:22] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:21:22.320170+05:30...
+[2026-06-06 17:21:22] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:21:22] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:21:22] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 17:21:22.320170+05:30 to 2026-06-06 17:21:22.320170+05:30
+[2026-06-06 17:21:22] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:21:22] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:21:22.320170+05:30...
+[2026-06-06 17:21:22] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:21:22] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:51:22.659872-04:00.
+[2026-06-06 17:21:22] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:21:22] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:21:22] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:21:22.661864+05:30.
+[2026-06-06 17:21:22] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:21:22] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3419, 32), y shape (3419,)
+[2026-06-06 17:21:36] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 07:51:36.586974-04:00 to 2026-06-06 07:51:36.586974-04:00
+[2026-06-06 17:21:36] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:21:36] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 07:51:36.586974-04:00...
+[2026-06-06 17:21:37] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:21:37] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:51:37.225024-04:00.
+[2026-06-06 17:21:37] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:21:37] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3459, 30), y shape (3459,)
+[2026-06-06 17:21:37] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 17:21:37.708507+05:30 to 2026-06-06 17:21:37.708507+05:30
+[2026-06-06 17:21:37] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:21:37] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:21:37.708507+05:30...
+[2026-06-06 17:21:37] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:21:37] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:21:37] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 17:21:37.708507+05:30 to 2026-06-06 17:21:37.708507+05:30
+[2026-06-06 17:21:37] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:21:37] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:21:37.708507+05:30...
+[2026-06-06 17:21:38] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:21:38] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:51:38.035277-04:00.
+[2026-06-06 17:21:38] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:21:38] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:21:38] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:21:38.037323+05:30.
+[2026-06-06 17:21:38] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:21:38] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3419, 32), y shape (3419,)
+[2026-06-06 17:24:48] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (250, 30), y shape (250,)
+[2026-06-06 17:24:48] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 98.00, Trigger Price: 98.00
+[2026-06-06 17:24:48] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 97.90, Trigger Price: 98.00
+[2026-06-06 17:24:48] INFO [market_bot.can_open_position:42] Trade limit reached for today: 3 trades executed. Max limit is 3.
+[2026-06-06 17:24:48] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 17:24:48] INFO [market_bot.can_open_position:47] Cannot open new position: Daily loss limit is breached.
+[2026-06-06 17:24:48] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 17:24:56] INFO [market_bot.run_train:49] --- TRAINING MODE FOR SPY ---
+[2026-06-06 17:24:56] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 17:24:56.936316-04:00 to 2026-06-06 17:24:56.936322-04:00
+[2026-06-06 17:24:56] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:24:56] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:24:56.936322-04:00...
+[2026-06-06 17:24:57] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:24:57] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:54:57.931556-04:00.
+[2026-06-06 17:24:57] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:24:57] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3459, 30), y shape (3459,)
+[2026-06-06 17:24:57] INFO [market_bot.train:31] Starting model training for SPY...
+[2026-06-06 17:24:57] INFO [market_bot.train:49] Running 5-fold cross-validation on training set to tune decision threshold...
+[2026-06-06 17:24:58] INFO [market_bot.train:91] OOF Threshold Tuning completed. Optimal Threshold: 0.595 (OOF Precision: 0.6612)
+[2026-06-06 17:24:58] INFO [market_bot.train:94] Training final model on full training set...
+[2026-06-06 17:24:58] INFO [market_bot.train:120] --- Model Evaluation for SPY ---
+[2026-06-06 17:24:58] INFO [market_bot.train:121] Test Accuracy (optimal threshold 0.595):  0.5101
+[2026-06-06 17:24:58] INFO [market_bot.train:122] Test Precision (optimal threshold 0.595): 0.5333
+[2026-06-06 17:24:58] INFO [market_bot.train:123] Test Recall (optimal threshold 0.595):    0.0933
+[2026-06-06 17:24:58] INFO [market_bot.train:124] Confusion Matrix:
+[[321  28]
+ [311  32]]
+[2026-06-06 17:24:58] INFO [market_bot.train:125] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 17:24:58] INFO [market_bot.save:156] Model successfully saved to models/SPY_model.joblib
+[2026-06-06 17:24:58] INFO [market_bot.run_train:70] Model trained and saved successfully for SPY.
+[2026-06-06 17:25:02] INFO [market_bot.run_train:49] --- TRAINING MODE FOR NIFTY ---
+[2026-06-06 17:25:02] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 17:25:02.474856+05:30 to 2026-06-06 17:25:02.474863+05:30
+[2026-06-06 17:25:02] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:25:02] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:25:02.474863+05:30...
+[2026-06-06 17:25:03] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:25:03] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:25:03] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 17:25:02.474856+05:30 to 2026-06-06 17:25:02.474863+05:30
+[2026-06-06 17:25:03] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:25:03] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:25:02.474863+05:30...
+[2026-06-06 17:25:03] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:25:03] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:55:03.311772-04:00.
+[2026-06-06 17:25:03] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:25:03] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:25:03] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:25:03.313542+05:30.
+[2026-06-06 17:25:03] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:25:03] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3419, 32), y shape (3419,)
+[2026-06-06 17:25:03] INFO [market_bot.train:31] Starting model training for NIFTY...
+[2026-06-06 17:25:03] INFO [market_bot.train:49] Running 5-fold cross-validation on training set to tune decision threshold...
+[2026-06-06 17:25:03] INFO [market_bot.train:91] OOF Threshold Tuning completed. Optimal Threshold: 0.570 (OOF Precision: 0.6923)
+[2026-06-06 17:25:03] INFO [market_bot.train:94] Training final model on full training set...
+[2026-06-06 17:25:03] INFO [market_bot.train:120] --- Model Evaluation for NIFTY ---
+[2026-06-06 17:25:03] INFO [market_bot.train:121] Test Accuracy (optimal threshold 0.570):  0.5906
+[2026-06-06 17:25:03] INFO [market_bot.train:122] Test Precision (optimal threshold 0.570): 0.5795
+[2026-06-06 17:25:03] INFO [market_bot.train:123] Test Recall (optimal threshold 0.570):    0.1735
+[2026-06-06 17:25:03] INFO [market_bot.train:124] Confusion Matrix:
+[[353  37]
+ [243  51]]
+[2026-06-06 17:25:03] INFO [market_bot.train:125] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 17:25:03] INFO [market_bot.save:156] Model successfully saved to models/NIFTY_model.joblib
+[2026-06-06 17:25:03] INFO [market_bot.run_train:70] Model trained and saved successfully for NIFTY.
+[2026-06-06 17:25:08] INFO [market_bot.run_backtest:73] --- BACKTEST MODE FOR SPY ---
+[2026-06-06 17:25:08] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 17:25:08.457048-04:00 to 2026-06-06 17:25:08.457053-04:00
+[2026-06-06 17:25:08] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:25:08] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:25:08.457053-04:00...
+[2026-06-06 17:25:09] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:25:09] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:55:09.116050-04:00.
+[2026-06-06 17:25:09] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:25:09] INFO [market_bot.load:172] Loaded trained model for SPY from models/SPY_model.joblib. Optimal Threshold: 0.595
+[2026-06-06 17:25:09] INFO [market_bot.run_backtest:96] Running ML-guided strategy backtest...
+[2026-06-06 17:25:09] INFO [market_bot.run_backtest:28] Starting backtest for SPY (US market) on 3459 candles...
+[2026-06-06 17:25:09] INFO [market_bot.run_backtest:32] Using model's saved optimal threshold: 0.595
+[2026-06-06 17:25:11] INFO [market_bot.run_backtest:351] Backtest completed. Final Capital: 100560.08, Trades: 15, Win Rate: 66.67%, Max Drawdown: -1.42%
+[2026-06-06 17:25:11] INFO [market_bot.run_backtest:103] Running Rule-only baseline backtest...
+[2026-06-06 17:25:11] INFO [market_bot.run_backtest:28] Starting backtest for SPY (US market) on 3459 candles...
+[2026-06-06 17:25:12] INFO [market_bot.run_backtest:351] Backtest completed. Final Capital: 100000.00, Trades: 0, Win Rate: 0.00%, Max Drawdown: 0.00%
+[2026-06-06 17:25:17] INFO [market_bot.run_backtest:73] --- BACKTEST MODE FOR NIFTY ---
+[2026-06-06 17:25:17] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 17:25:17.979865+05:30 to 2026-06-06 17:25:17.979870+05:30
+[2026-06-06 17:25:18] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:25:18] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:25:17.979870+05:30...
+[2026-06-06 17:25:18] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:25:18] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:25:18] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 17:25:17.979865+05:30 to 2026-06-06 17:25:17.979870+05:30
+[2026-06-06 17:25:18] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:25:18] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:25:17.979870+05:30...
+[2026-06-06 17:25:18] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:25:18] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:55:18.891086-04:00.
+[2026-06-06 17:25:18] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:25:18] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:25:18] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:25:18.892895+05:30.
+[2026-06-06 17:25:18] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:25:18] INFO [market_bot.load:172] Loaded trained model for NIFTY from models/NIFTY_model.joblib. Optimal Threshold: 0.570
+[2026-06-06 17:25:18] INFO [market_bot.run_backtest:96] Running ML-guided strategy backtest...
+[2026-06-06 17:25:18] INFO [market_bot.run_backtest:28] Starting backtest for NIFTY (INDIA market) on 3419 candles...
+[2026-06-06 17:25:18] INFO [market_bot.run_backtest:32] Using model's saved optimal threshold: 0.570
+[2026-06-06 17:25:21] INFO [market_bot.run_backtest:351] Backtest completed. Final Capital: 100032.83, Trades: 11, Win Rate: 63.64%, Max Drawdown: -0.90%
+[2026-06-06 17:25:21] INFO [market_bot.run_backtest:103] Running Rule-only baseline backtest...
+[2026-06-06 17:25:21] INFO [market_bot.run_backtest:28] Starting backtest for NIFTY (INDIA market) on 3419 candles...
+[2026-06-06 17:25:21] INFO [market_bot.run_backtest:351] Backtest completed. Final Capital: 100000.00, Trades: 0, Win Rate: 0.00%, Max Drawdown: 0.00%
+[2026-06-06 17:25:27] INFO [market_bot.run_predict:139] --- PREDICTION & PAPER TRADING EXECUTION FOR SPY ---
+[2026-06-06 17:25:27] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2026-04-07 17:25:27.959983-04:00 to 2026-06-06 17:25:27.959988-04:00
+[2026-06-06 17:25:27] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:25:27] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:25:27.959988-04:00...
+[2026-06-06 17:25:28] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:25:28] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:55:28.844942-04:00.
+[2026-06-06 17:25:28] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:25:28] INFO [market_bot.load:172] Loaded trained model for SPY from models/SPY_model.joblib. Optimal Threshold: 0.595
+[2026-06-06 17:25:28] INFO [market_bot.load_state:41] Loaded paper trader state for SPY. Balance: 100000.00
+[2026-06-06 17:25:33] INFO [market_bot.run_predict:139] --- PREDICTION & PAPER TRADING EXECUTION FOR NIFTY ---
+[2026-06-06 17:25:33] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2026-04-07 17:25:33.076064+05:30 to 2026-06-06 17:25:33.076069+05:30
+[2026-06-06 17:25:33] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 17:25:33] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 17:25:33.076069+05:30...
+[2026-06-06 17:25:33] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 17:25:33] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 17:25:33] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2026-04-05 17:25:33.076064+05:30 to 2026-06-06 17:25:33.076069+05:30
+[2026-06-06 17:25:33] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 17:25:33] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 17:25:33.076069+05:30...
+[2026-06-06 17:25:34] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 17:25:34] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 07:55:34.018000-04:00.
+[2026-06-06 17:25:34] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 17:25:34] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 17:25:34] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 17:25:34.020192+05:30.
+[2026-06-06 17:25:34] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 17:25:34] INFO [market_bot.load:172] Loaded trained model for NIFTY from models/NIFTY_model.joblib. Optimal Threshold: 0.570
+[2026-06-06 17:25:34] INFO [market_bot.load_state:41] Loaded paper trader state for NIFTY. Balance: 100000.00
+[2026-06-06 18:12:25] INFO [market_bot.run_backtest:73] --- BACKTEST MODE FOR SPY ---
+[2026-06-06 18:12:25] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 18:12:25.083870-04:00 to 2026-06-06 18:12:25.083877-04:00
+[2026-06-06 18:12:25] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 18:12:25] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 18:12:25.083877-04:00...
+[2026-06-06 18:12:26] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 18:12:26] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 08:42:26.881906-04:00.
+[2026-06-06 18:12:26] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 18:12:26] INFO [market_bot.load:172] Loaded trained model for SPY from models/SPY_model.joblib. Optimal Threshold: 0.595
+[2026-06-06 18:12:26] INFO [market_bot.run_backtest:96] Running ML-guided strategy backtest...
+[2026-06-06 18:12:26] INFO [market_bot.run_backtest:28] Starting backtest for SPY (US market) on 3459 candles...
+[2026-06-06 18:12:26] INFO [market_bot.run_backtest:32] Using model's saved optimal threshold: 0.595
+[2026-06-06 18:12:33] INFO [market_bot.run_backtest:351] Backtest completed. Final Capital: 100560.08, Trades: 15, Win Rate: 66.67%, Max Drawdown: -1.42%
+[2026-06-06 18:12:33] INFO [market_bot.run_backtest:103] Running Rule-only baseline backtest...
+[2026-06-06 18:12:33] INFO [market_bot.run_backtest:28] Starting backtest for SPY (US market) on 3459 candles...
+[2026-06-06 18:12:34] INFO [market_bot.run_backtest:351] Backtest completed. Final Capital: 100000.00, Trades: 0, Win Rate: 0.00%, Max Drawdown: 0.00%
+[2026-06-06 18:12:36] INFO [market_bot.run_backtest:73] --- BACKTEST MODE FOR NIFTY ---
+[2026-06-06 18:12:36] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 18:12:36.511430+05:30 to 2026-06-06 18:12:36.511436+05:30
+[2026-06-06 18:12:36] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 18:12:36] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 18:12:36.511436+05:30...
+[2026-06-06 18:12:37] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 18:12:37] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 18:12:37] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 18:12:36.511430+05:30 to 2026-06-06 18:12:36.511436+05:30
+[2026-06-06 18:12:37] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 18:12:37] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 18:12:36.511436+05:30...
+[2026-06-06 18:12:37] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 18:12:37] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 08:42:37.698571-04:00.
+[2026-06-06 18:12:37] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 18:12:37] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 18:12:37] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 18:12:37.702232+05:30.
+[2026-06-06 18:12:37] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 18:12:37] INFO [market_bot.load:172] Loaded trained model for NIFTY from models/NIFTY_model.joblib. Optimal Threshold: 0.570
+[2026-06-06 18:12:37] INFO [market_bot.run_backtest:96] Running ML-guided strategy backtest...
+[2026-06-06 18:12:37] INFO [market_bot.run_backtest:28] Starting backtest for NIFTY (INDIA market) on 3419 candles...
+[2026-06-06 18:12:37] INFO [market_bot.run_backtest:32] Using model's saved optimal threshold: 0.570
+[2026-06-06 18:12:44] INFO [market_bot.run_backtest:351] Backtest completed. Final Capital: 100032.83, Trades: 11, Win Rate: 63.64%, Max Drawdown: -0.90%
+[2026-06-06 18:12:44] INFO [market_bot.run_backtest:103] Running Rule-only baseline backtest...
+[2026-06-06 18:12:44] INFO [market_bot.run_backtest:28] Starting backtest for NIFTY (INDIA market) on 3419 candles...
+[2026-06-06 18:12:44] INFO [market_bot.run_backtest:351] Backtest completed. Final Capital: 100000.00, Trades: 0, Win Rate: 0.00%, Max Drawdown: 0.00%
+[2026-06-06 18:12:55] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 18:12:55.976515-04:00 to 2026-06-06 18:12:55.976527-04:00
+[2026-06-06 18:12:56] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 18:12:56] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 18:12:55.976527-04:00...
+[2026-06-06 18:12:58] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 18:12:58] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 08:42:58.086378-04:00.
+[2026-06-06 18:12:58] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 18:12:58] INFO [market_bot.load:172] Loaded trained model for SPY from /Users/arunmehta/coding-projects/trade-predictor/models/SPY_model.joblib. Optimal Threshold: 0.595
+[2026-06-06 18:12:58] INFO [market_bot.run_backtest:28] Starting backtest for SPY (US market) on 3459 candles...
+[2026-06-06 18:12:58] INFO [market_bot.run_backtest:32] Using model's saved optimal threshold: 0.595
+[2026-06-06 18:13:03] INFO [market_bot.run_backtest:351] Backtest completed. Final Capital: 100560.08, Trades: 15, Win Rate: 66.67%, Max Drawdown: -1.42%
+[2026-06-06 18:13:03] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 18:13:03.880680+05:30 to 2026-06-06 18:13:03.880687+05:30
+[2026-06-06 18:13:03] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 18:13:03] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 18:13:03.880687+05:30...
+[2026-06-06 18:13:04] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 18:13:04] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 18:13:04] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 18:13:03.880680+05:30 to 2026-06-06 18:13:03.880687+05:30
+[2026-06-06 18:13:04] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 18:13:04] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 18:13:03.880687+05:30...
+[2026-06-06 18:13:04] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 18:13:04] INFO [market_bot.validate_recency:219] Recency check for SPY: Last candle timestamp is 2026-06-05 15:30:00-04:00. Current time is 2026-06-06 08:43:04.234185-04:00.
+[2026-06-06 18:13:04] INFO [market_bot.validate_recency:234] Recency check passed for SPY.
+[2026-06-06 18:13:04] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 18:13:04] INFO [market_bot.validate_recency:219] Recency check for NIFTY: Last candle timestamp is 2026-06-05 15:15:00+05:30. Current time is 2026-06-06 18:13:04.236603+05:30.
+[2026-06-06 18:13:04] INFO [market_bot.validate_recency:234] Recency check passed for NIFTY.
+[2026-06-06 18:13:04] INFO [market_bot.load:172] Loaded trained model for NIFTY from /Users/arunmehta/coding-projects/trade-predictor/models/NIFTY_model.joblib. Optimal Threshold: 0.570
+[2026-06-06 18:13:04] INFO [market_bot.run_backtest:28] Starting backtest for NIFTY (INDIA market) on 3419 candles...
+[2026-06-06 18:13:04] INFO [market_bot.run_backtest:32] Using model's saved optimal threshold: 0.570
+[2026-06-06 18:13:09] INFO [market_bot.run_backtest:351] Backtest completed. Final Capital: 100032.83, Trades: 11, Win Rate: 63.64%, Max Drawdown: -0.90%
+[2026-06-06 18:22:23] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (250, 30), y shape (250,)
+[2026-06-06 18:22:23] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 98.00, Trigger Price: 98.00
+[2026-06-06 18:22:23] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 97.90, Trigger Price: 98.00
+[2026-06-06 18:22:23] INFO [market_bot.can_open_position:42] Trade limit reached for today: 3 trades executed. Max limit is 3.
+[2026-06-06 18:22:23] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 18:22:23] INFO [market_bot.can_open_position:47] Cannot open new position: Daily loss limit is breached.
+[2026-06-06 18:22:23] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 18:23:38] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (250, 30), y shape (250,)
+[2026-06-06 18:23:38] INFO [market_bot.run_backtest:30] Starting backtest for SPY (US market) on 205 candles...
+[2026-06-06 18:23:38] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 99015.82, Trades: 1, Win Rate: 0.00%, Max Drawdown: -1.16%
+[2026-06-06 18:23:38] INFO [market_bot.load_state:36] Initialized new paper trader state for TEST_MOCK_SYMBOL at test_mock_symbol_paper_trader_state.json
+[2026-06-06 18:23:38] INFO [market_bot.reset_account:235] Paper trading account for TEST_MOCK_SYMBOL has been reset.
+[2026-06-06 18:23:38] WARNING [market_bot.process_signal:94] Paper trading execution blocked: Market is closed or data is stale. Forcing HOLD.
+[2026-06-06 18:23:38] WARNING [market_bot.process_signal:94] Paper trading execution blocked: Market is closed or data is stale. Forcing HOLD.
+[2026-06-06 18:23:39] INFO [market_bot.train:31] Starting model training for TEST_MOCK...
+[2026-06-06 18:23:39] INFO [market_bot.train:50] Running 5-fold TimeSeriesSplit cross-validation on training set to tune decision threshold...
+[2026-06-06 18:23:39] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 98.00, Trigger Price: 98.00
+[2026-06-06 18:23:39] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 97.90, Trigger Price: 98.00
+[2026-06-06 18:23:39] INFO [market_bot.can_open_position:42] Trade limit reached for today: 3 trades executed. Max limit is 3.
+[2026-06-06 18:23:39] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 18:23:39] INFO [market_bot.can_open_position:47] Cannot open new position: Daily loss limit is breached.
+[2026-06-06 18:23:39] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 18:23:53] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (250, 30), y shape (250,)
+[2026-06-06 18:23:53] INFO [market_bot.run_backtest:30] Starting backtest for SPY (US market) on 205 candles...
+[2026-06-06 18:23:53] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 99015.82, Trades: 1, Win Rate: 0.00%, Max Drawdown: -1.16%
+[2026-06-06 18:23:53] INFO [market_bot.load_state:36] Initialized new paper trader state for TEST_MOCK_SYMBOL at test_mock_symbol_paper_trader_state.json
+[2026-06-06 18:23:53] INFO [market_bot.reset_account:235] Paper trading account for TEST_MOCK_SYMBOL has been reset.
+[2026-06-06 18:23:53] WARNING [market_bot.process_signal:94] Paper trading execution blocked: Market is closed or data is stale. Forcing HOLD.
+[2026-06-06 18:23:53] WARNING [market_bot.process_signal:94] Paper trading execution blocked: Market is closed or data is stale. Forcing HOLD.
+[2026-06-06 18:23:55] INFO [market_bot.train:31] Starting model training for TEST_MOCK...
+[2026-06-06 18:23:55] INFO [market_bot.train:50] Running 5-fold TimeSeriesSplit cross-validation on training set to tune decision threshold...
+[2026-06-06 18:23:55] INFO [market_bot.train:98] TimeSeriesSplit Threshold Tuning completed. Optimal Threshold: 0.500 (Validation Precision: 1.0000)
+[2026-06-06 18:23:55] INFO [market_bot.train:101] Training final model on full training set...
+[2026-06-06 18:23:55] INFO [market_bot.train:127] --- Model Evaluation for TEST_MOCK ---
+[2026-06-06 18:23:55] INFO [market_bot.train:128] Test Accuracy (optimal threshold 0.500):  0.5000
+[2026-06-06 18:23:55] INFO [market_bot.train:129] Test Precision (optimal threshold 0.500): 0.5000
+[2026-06-06 18:23:55] INFO [market_bot.train:130] Test Recall (optimal threshold 0.500):    1.0000
+[2026-06-06 18:23:55] INFO [market_bot.train:131] Confusion Matrix:
+[[0 5]
+ [0 5]]
+[2026-06-06 18:23:55] INFO [market_bot.train:132] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 18:23:55] INFO [market_bot.save:163] Model successfully saved to models/TEST_MOCK_model.joblib
+[2026-06-06 18:23:55] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 98.00, Trigger Price: 98.00
+[2026-06-06 18:23:55] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 97.90, Trigger Price: 98.00
+[2026-06-06 18:23:55] INFO [market_bot.can_open_position:42] Trade limit reached for today: 3 trades executed. Max limit is 3.
+[2026-06-06 18:23:55] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 18:23:55] INFO [market_bot.can_open_position:47] Cannot open new position: Daily loss limit is breached.
+[2026-06-06 18:23:55] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 18:24:30] INFO [market_bot.run_backtest:73] --- BACKTEST MODE FOR SPY ---
+[2026-06-06 18:24:30] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 18:24:30.907712-04:00 to 2026-06-06 18:24:30.907718-04:00
+[2026-06-06 18:24:30] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 18:24:30] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 18:24:30.907718-04:00...
+[2026-06-06 18:24:33] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 18:24:33] INFO [market_bot.load:179] Loaded trained model for SPY from models/SPY_model.joblib. Optimal Threshold: 0.595
+[2026-06-06 18:24:33] INFO [market_bot.run_backtest:100] Running ML-guided strategy backtest (OOS Start: 2026-01-12)...
+[2026-06-06 18:24:33] INFO [market_bot.run_backtest:30] Starting backtest for SPY (US market) on 3459 candles...
+[2026-06-06 18:24:33] INFO [market_bot.run_backtest:36] Using model's saved optimal threshold: 0.595
+[2026-06-06 18:24:38] INFO [market_bot.run_backtest:110] OOS period started at 2026-01-12 14:30:00-05:00. Initial OOS Equity: 101013.63
+[2026-06-06 18:24:38] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 100145.65, Trades: 16, Win Rate: 62.50%, Max Drawdown: -1.70%
+[2026-06-06 18:24:38] INFO [market_bot.run_backtest:107] Running Rule-only baseline backtest...
+[2026-06-06 18:24:38] INFO [market_bot.run_backtest:30] Starting backtest for SPY (US market) on 3459 candles...
+[2026-06-06 18:24:38] INFO [market_bot.run_backtest:110] OOS period started at 2026-01-12 14:30:00-05:00. Initial OOS Equity: 101688.67
+[2026-06-06 18:24:38] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 101369.46, Trades: 16, Win Rate: 37.50%, Max Drawdown: -2.17%
+[2026-06-06 18:24:44] INFO [market_bot.run_walk_forward:269] --- WALK-FORWARD VALIDATION FOR SPY ---
+[2026-06-06 18:24:44] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 18:24:44.250068-04:00 to 2026-06-06 18:24:44.250074-04:00
+[2026-06-06 18:24:44] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 18:24:44] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 18:24:44.250074-04:00...
+[2026-06-06 18:24:45] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 18:24:45] INFO [market_bot.run_walk_forward:308] Walk 1: Training from 2024-06-10 to 2025-06-10, Testing from 2025-06-10 to 2025-08-08
+[2026-06-06 18:24:45] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (1739, 30), y shape (1739,)
+[2026-06-06 18:24:45] ERROR [market_bot.run_walk_forward:388] Error in Walk 1: name 'np' is not defined
+Traceback (most recent call last):
+  File "/Users/arunmehta/coding-projects/trade-predictor/main.py", line 352, in run_walk_forward
+    val_preds = np.array(val_preds_list)
+                ^^
+NameError: name 'np' is not defined
+[2026-06-06 18:24:45] INFO [market_bot.run_walk_forward:308] Walk 2: Training from 2024-06-10 to 2025-08-08, Testing from 2025-08-11 to 2025-10-08
+[2026-06-06 18:24:45] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2028, 30), y shape (2028,)
+[2026-06-06 18:24:46] ERROR [market_bot.run_walk_forward:388] Error in Walk 2: name 'np' is not defined
+Traceback (most recent call last):
+  File "/Users/arunmehta/coding-projects/trade-predictor/main.py", line 352, in run_walk_forward
+    val_preds = np.array(val_preds_list)
+                ^^
+NameError: name 'np' is not defined
+[2026-06-06 18:24:46] INFO [market_bot.run_walk_forward:308] Walk 3: Training from 2024-06-10 to 2025-10-08, Testing from 2025-10-08 to 2025-12-05
+[2026-06-06 18:24:46] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2316, 30), y shape (2316,)
+[2026-06-06 18:24:46] ERROR [market_bot.run_walk_forward:388] Error in Walk 3: name 'np' is not defined
+Traceback (most recent call last):
+  File "/Users/arunmehta/coding-projects/trade-predictor/main.py", line 352, in run_walk_forward
+    val_preds = np.array(val_preds_list)
+                ^^
+NameError: name 'np' is not defined
+[2026-06-06 18:24:46] INFO [market_bot.run_walk_forward:308] Walk 4: Training from 2024-06-10 to 2025-12-05, Testing from 2025-12-08 to 2026-02-04
+[2026-06-06 18:24:46] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2605, 30), y shape (2605,)
+[2026-06-06 18:24:47] ERROR [market_bot.run_walk_forward:388] Error in Walk 4: name 'np' is not defined
+Traceback (most recent call last):
+  File "/Users/arunmehta/coding-projects/trade-predictor/main.py", line 352, in run_walk_forward
+    val_preds = np.array(val_preds_list)
+                ^^
+NameError: name 'np' is not defined
+[2026-06-06 18:24:47] INFO [market_bot.run_walk_forward:308] Walk 5: Training from 2024-06-10 to 2026-02-04, Testing from 2026-02-05 to 2026-04-06
+[2026-06-06 18:24:47] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2871, 30), y shape (2871,)
+[2026-06-06 18:24:47] ERROR [market_bot.run_walk_forward:388] Error in Walk 5: name 'np' is not defined
+Traceback (most recent call last):
+  File "/Users/arunmehta/coding-projects/trade-predictor/main.py", line 352, in run_walk_forward
+    val_preds = np.array(val_preds_list)
+                ^^
+NameError: name 'np' is not defined
+[2026-06-06 18:24:47] INFO [market_bot.run_walk_forward:308] Walk 6: Training from 2024-06-10 to 2026-04-06, Testing from 2026-04-06 to 2026-06-05
+[2026-06-06 18:24:47] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3152, 30), y shape (3152,)
+[2026-06-06 18:24:48] ERROR [market_bot.run_walk_forward:388] Error in Walk 6: name 'np' is not defined
+Traceback (most recent call last):
+  File "/Users/arunmehta/coding-projects/trade-predictor/main.py", line 352, in run_walk_forward
+    val_preds = np.array(val_preds_list)
+                ^^
+NameError: name 'np' is not defined
+[2026-06-06 18:24:48] ERROR [market_bot.run_walk_forward:395] No walk-forward periods completed successfully.
+[2026-06-06 18:25:09] INFO [market_bot.run_walk_forward:270] --- WALK-FORWARD VALIDATION FOR SPY ---
+[2026-06-06 18:25:09] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 18:25:09.687788-04:00 to 2026-06-06 18:25:09.687795-04:00
+[2026-06-06 18:25:09] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 18:25:09] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 18:25:09.687795-04:00...
+[2026-06-06 18:25:10] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 18:25:10] INFO [market_bot.run_walk_forward:309] Walk 1: Training from 2024-06-10 to 2025-06-10, Testing from 2025-06-10 to 2025-08-08
+[2026-06-06 18:25:10] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (1739, 30), y shape (1739,)
+[2026-06-06 18:25:11] INFO [market_bot.run_walk_forward:309] Walk 2: Training from 2024-06-10 to 2025-08-08, Testing from 2025-08-11 to 2025-10-08
+[2026-06-06 18:25:11] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2028, 30), y shape (2028,)
+[2026-06-06 18:25:12] INFO [market_bot.run_walk_forward:309] Walk 3: Training from 2024-06-10 to 2025-10-08, Testing from 2025-10-08 to 2025-12-05
+[2026-06-06 18:25:12] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2316, 30), y shape (2316,)
+[2026-06-06 18:25:12] INFO [market_bot.run_walk_forward:309] Walk 4: Training from 2024-06-10 to 2025-12-05, Testing from 2025-12-08 to 2026-02-04
+[2026-06-06 18:25:12] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2605, 30), y shape (2605,)
+[2026-06-06 18:25:13] INFO [market_bot.run_walk_forward:309] Walk 5: Training from 2024-06-10 to 2026-02-04, Testing from 2026-02-05 to 2026-04-06
+[2026-06-06 18:25:13] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2871, 30), y shape (2871,)
+[2026-06-06 18:25:14] INFO [market_bot.run_walk_forward:309] Walk 6: Training from 2024-06-10 to 2026-04-06, Testing from 2026-04-06 to 2026-06-05
+[2026-06-06 18:25:14] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3152, 30), y shape (3152,)
+[2026-06-06 18:25:15] INFO [market_bot.run_walk_forward:417] Running ML-guided Walk-Forward backtest starting at 2025-06-10...
+[2026-06-06 18:25:15] INFO [market_bot.run_backtest:30] Starting backtest for SPY (US market) on 1920 candles...
+[2026-06-06 18:25:15] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:30:00-04:00. Initial OOS Equity: 100000.00
+[2026-06-06 18:25:33] INFO [market_bot.run_walk_forward:270] --- WALK-FORWARD VALIDATION FOR SPY ---
+[2026-06-06 18:25:33] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 18:25:33.181823-04:00 to 2026-06-06 18:25:33.181832-04:00
+[2026-06-06 18:25:33] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 18:25:33] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 18:25:33.181832-04:00...
+[2026-06-06 18:25:33] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 18:25:33] INFO [market_bot.run_walk_forward:309] Walk 1: Training from 2024-06-10 to 2025-06-10, Testing from 2025-06-10 to 2025-08-08
+[2026-06-06 18:25:33] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (1739, 30), y shape (1739,)
+[2026-06-06 18:25:34] INFO [market_bot.run_walk_forward:309] Walk 2: Training from 2024-06-10 to 2025-08-08, Testing from 2025-08-11 to 2025-10-08
+[2026-06-06 18:25:34] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2028, 30), y shape (2028,)
+[2026-06-06 18:25:35] INFO [market_bot.run_walk_forward:309] Walk 3: Training from 2024-06-10 to 2025-10-08, Testing from 2025-10-08 to 2025-12-05
+[2026-06-06 18:25:35] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2316, 30), y shape (2316,)
+[2026-06-06 18:25:35] INFO [market_bot.run_walk_forward:309] Walk 4: Training from 2024-06-10 to 2025-12-05, Testing from 2025-12-08 to 2026-02-04
+[2026-06-06 18:25:36] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2605, 30), y shape (2605,)
+[2026-06-06 18:25:36] INFO [market_bot.run_walk_forward:309] Walk 5: Training from 2024-06-10 to 2026-02-04, Testing from 2026-02-05 to 2026-04-06
+[2026-06-06 18:25:36] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2871, 30), y shape (2871,)
+[2026-06-06 18:25:37] INFO [market_bot.run_walk_forward:309] Walk 6: Training from 2024-06-10 to 2026-04-06, Testing from 2026-04-06 to 2026-06-05
+[2026-06-06 18:25:37] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3152, 30), y shape (3152,)
+[2026-06-06 18:25:38] INFO [market_bot.run_walk_forward:419] Running ML-guided Walk-Forward backtest starting at 2025-06-10...
+[2026-06-06 18:25:38] INFO [market_bot.run_backtest:30] Starting backtest for SPY (US market) on 1914 candles...
+[2026-06-06 18:25:38] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:30:00-04:00. Initial OOS Equity: 100000.00
+[2026-06-06 18:25:38] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 98723.22, Trades: 6, Win Rate: 33.33%, Max Drawdown: -1.89%
+[2026-06-06 18:25:38] INFO [market_bot.run_walk_forward:429] Running Rule-only baseline backtest...
+[2026-06-06 18:25:38] INFO [market_bot.run_backtest:30] Starting backtest for SPY (US market) on 1914 candles...
+[2026-06-06 18:25:38] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:30:00-04:00. Initial OOS Equity: 100000.00
+[2026-06-06 18:25:38] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 101865.65, Trades: 8, Win Rate: 50.00%, Max Drawdown: -1.77%
+[2026-06-06 18:25:47] INFO [market_bot.run_backtest:74] --- BACKTEST MODE FOR NIFTY ---
+[2026-06-06 18:25:47] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 18:25:47.723702+05:30 to 2026-06-06 18:25:47.723708+05:30
+[2026-06-06 18:25:47] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 18:25:47] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 18:25:47.723708+05:30...
+[2026-06-06 18:25:48] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 18:25:48] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 18:25:48] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 18:25:47.723702+05:30 to 2026-06-06 18:25:47.723708+05:30
+[2026-06-06 18:25:48] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 18:25:48] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 18:25:47.723708+05:30...
+[2026-06-06 18:25:48] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 18:25:48] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 18:25:48] INFO [market_bot.load:179] Loaded trained model for NIFTY from models/NIFTY_model.joblib. Optimal Threshold: 0.570
+[2026-06-06 18:25:48] INFO [market_bot.run_backtest:101] Running ML-guided strategy backtest (OOS Start: 2026-01-06)...
+[2026-06-06 18:25:48] INFO [market_bot.run_backtest:30] Starting backtest for NIFTY (INDIA market) on 3419 candles...
+[2026-06-06 18:25:48] INFO [market_bot.run_backtest:36] Using model's saved optimal threshold: 0.570
+[2026-06-06 18:25:53] INFO [market_bot.run_backtest:110] OOS period started at 2026-01-06 12:15:00+05:30. Initial OOS Equity: 100818.71
+[2026-06-06 18:25:53] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 100011.11, Trades: 11, Win Rate: 63.64%, Max Drawdown: -0.86%
+[2026-06-06 18:25:53] INFO [market_bot.run_backtest:108] Running Rule-only baseline backtest...
+[2026-06-06 18:25:53] INFO [market_bot.run_backtest:30] Starting backtest for NIFTY (INDIA market) on 3419 candles...
+[2026-06-06 18:25:53] INFO [market_bot.run_backtest:110] OOS period started at 2026-01-06 12:15:00+05:30. Initial OOS Equity: 98637.17
+[2026-06-06 18:25:53] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 96995.06, Trades: 14, Win Rate: 28.57%, Max Drawdown: -3.33%
+[2026-06-06 18:26:01] INFO [market_bot.run_walk_forward:270] --- WALK-FORWARD VALIDATION FOR NIFTY ---
+[2026-06-06 18:26:01] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 18:26:01.088195+05:30 to 2026-06-06 18:26:01.088201+05:30
+[2026-06-06 18:26:01] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 18:26:01] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 18:26:01.088201+05:30...
+[2026-06-06 18:26:02] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 18:26:02] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 18:26:02] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 18:26:01.088195+05:30 to 2026-06-06 18:26:01.088201+05:30
+[2026-06-06 18:26:02] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 18:26:02] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 18:26:01.088201+05:30...
+[2026-06-06 18:26:02] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 18:26:02] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 18:26:02] INFO [market_bot.run_walk_forward:309] Walk 1: Training from 2024-06-10 to 2025-06-10, Testing from 2025-06-10 to 2025-08-08
+[2026-06-06 18:26:02] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (1730, 32), y shape (1730,)
+[2026-06-06 18:26:03] INFO [market_bot.run_walk_forward:309] Walk 2: Training from 2024-06-10 to 2025-08-08, Testing from 2025-08-11 to 2025-10-08
+[2026-06-06 18:26:03] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2037, 32), y shape (2037,)
+[2026-06-06 18:26:03] INFO [market_bot.run_walk_forward:309] Walk 3: Training from 2024-06-10 to 2025-10-08, Testing from 2025-10-08 to 2025-12-05
+[2026-06-06 18:26:03] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2311, 32), y shape (2311,)
+[2026-06-06 18:26:04] INFO [market_bot.run_walk_forward:309] Walk 4: Training from 2024-06-10 to 2025-12-05, Testing from 2025-12-08 to 2026-02-05
+[2026-06-06 18:26:04] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2592, 32), y shape (2592,)
+[2026-06-06 18:26:05] INFO [market_bot.run_walk_forward:309] Walk 5: Training from 2024-06-10 to 2026-02-05, Testing from 2026-02-05 to 2026-04-06
+[2026-06-06 18:26:05] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2865, 32), y shape (2865,)
+[2026-06-06 18:26:06] INFO [market_bot.run_walk_forward:309] Walk 6: Training from 2024-06-10 to 2026-04-06, Testing from 2026-04-06 to 2026-06-05
+[2026-06-06 18:26:06] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3131, 32), y shape (3131,)
+[2026-06-06 18:26:07] INFO [market_bot.run_walk_forward:419] Running ML-guided Walk-Forward backtest starting at 2025-06-10...
+[2026-06-06 18:26:07] INFO [market_bot.run_backtest:30] Starting backtest for NIFTY (INDIA market) on 1883 candles...
+[2026-06-06 18:26:07] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:15:00+05:30. Initial OOS Equity: 100000.00
+[2026-06-06 18:26:07] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 99886.70, Trades: 2, Win Rate: 0.00%, Max Drawdown: -0.14%
+[2026-06-06 18:26:07] INFO [market_bot.run_walk_forward:429] Running Rule-only baseline backtest...
+[2026-06-06 18:26:07] INFO [market_bot.run_backtest:30] Starting backtest for NIFTY (INDIA market) on 1883 candles...
+[2026-06-06 18:26:07] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:15:00+05:30. Initial OOS Equity: 100000.00
+[2026-06-06 18:26:07] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 97600.99, Trades: 10, Win Rate: 30.00%, Max Drawdown: -2.42%
+[2026-06-06 18:26:30] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (250, 30), y shape (250,)
+[2026-06-06 18:26:30] INFO [market_bot.run_backtest:30] Starting backtest for SPY (US market) on 205 candles...
+[2026-06-06 18:26:30] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 99015.82, Trades: 1, Win Rate: 0.00%, Max Drawdown: -1.16%
+[2026-06-06 18:26:30] INFO [market_bot.load_state:36] Initialized new paper trader state for TEST_MOCK_SYMBOL at test_mock_symbol_paper_trader_state.json
+[2026-06-06 18:26:30] INFO [market_bot.reset_account:235] Paper trading account for TEST_MOCK_SYMBOL has been reset.
+[2026-06-06 18:26:30] WARNING [market_bot.process_signal:94] Paper trading execution blocked: Market is closed or data is stale. Forcing HOLD.
+[2026-06-06 18:26:30] WARNING [market_bot.process_signal:94] Paper trading execution blocked: Market is closed or data is stale. Forcing HOLD.
+[2026-06-06 18:26:31] INFO [market_bot.train:31] Starting model training for TEST_MOCK...
+[2026-06-06 18:26:31] INFO [market_bot.train:50] Running 5-fold TimeSeriesSplit cross-validation on training set to tune decision threshold...
+[2026-06-06 18:26:31] INFO [market_bot.train:98] TimeSeriesSplit Threshold Tuning completed. Optimal Threshold: 0.500 (Validation Precision: 1.0000)
+[2026-06-06 18:26:31] INFO [market_bot.train:101] Training final model on full training set...
+[2026-06-06 18:26:31] INFO [market_bot.train:127] --- Model Evaluation for TEST_MOCK ---
+[2026-06-06 18:26:31] INFO [market_bot.train:128] Test Accuracy (optimal threshold 0.500):  0.5000
+[2026-06-06 18:26:31] INFO [market_bot.train:129] Test Precision (optimal threshold 0.500): 0.5000
+[2026-06-06 18:26:31] INFO [market_bot.train:130] Test Recall (optimal threshold 0.500):    1.0000
+[2026-06-06 18:26:31] INFO [market_bot.train:131] Confusion Matrix:
+[[0 5]
+ [0 5]]
+[2026-06-06 18:26:31] INFO [market_bot.train:132] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 18:26:31] INFO [market_bot.save:163] Model successfully saved to models/TEST_MOCK_model.joblib
+[2026-06-06 18:26:31] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 98.00, Trigger Price: 98.00
+[2026-06-06 18:26:31] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 97.90, Trigger Price: 98.00
+[2026-06-06 18:26:31] INFO [market_bot.can_open_position:42] Trade limit reached for today: 3 trades executed. Max limit is 3.
+[2026-06-06 18:26:31] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 18:26:31] INFO [market_bot.can_open_position:47] Cannot open new position: Daily loss limit is breached.
+[2026-06-06 18:26:31] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)

@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from xgboost import XGBClassifier
 from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import KFold
+from sklearn.model_selection import KFold, TimeSeriesSplit
 from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
 from src.logger import logger
 
@@ -42,12 +42,13 @@ class MarketMLModel:
         X_train_scaled = self.scaler.fit_transform(X_train)
         X_test_scaled = self.scaler.transform(X_test)
         
-        # 2. Run KFold cross-validation on Training Set to find optimal decision threshold
-        kf = KFold(n_splits=5, shuffle=True, random_state=42)
-        oof_probas = np.zeros(len(X_train))
+        # 2. Run TimeSeriesSplit cross-validation on Training Set to find optimal decision threshold
+        tscv = TimeSeriesSplit(n_splits=5)
+        val_preds_list = []
+        val_targets_list = []
         
-        logger.info("Running 5-fold cross-validation on training set to tune decision threshold...")
-        for train_cv_idx, val_cv_idx in kf.split(X_train):
+        logger.info("Running 5-fold TimeSeriesSplit cross-validation on training set to tune decision threshold...")
+        for train_cv_idx, val_cv_idx in tscv.split(X_train):
             X_tr, X_val = X_train.iloc[train_cv_idx], X_train.iloc[val_cv_idx]
             y_tr, y_val = y_train.iloc[train_cv_idx], y_train.iloc[val_cv_idx]
             
@@ -71,24 +72,30 @@ class MarketMLModel:
                 eval_metric='logloss'
             )
             fold_clf.fit(X_tr_scaled, y_tr)
-            oof_probas[val_cv_idx] = fold_clf.predict_proba(X_val_scaled)[:, 1]
             
-        # Tune threshold on OOF predictions (maximize precision subject to recall >= 10%)
+            val_prob = fold_clf.predict_proba(X_val_scaled)[:, 1]
+            val_preds_list.extend(val_prob)
+            val_targets_list.extend(y_val)
+            
+        val_preds = np.array(val_preds_list)
+        val_targets = np.array(val_targets_list)
+        
+        # Tune threshold on TimeSeriesSplit validation predictions (maximize precision subject to recall >= 10%)
         best_t = 0.50
         best_oof_prec = 0.0
         
         for t in np.linspace(0.50, 0.65, 31):
-            preds = (oof_probas >= t).astype(int)
-            rec = recall_score(y_train, preds, zero_division=0)
-            prec = precision_score(y_train, preds, zero_division=0)
+            preds = (val_preds >= t).astype(int)
+            rec = recall_score(val_targets, preds, zero_division=0)
+            prec = precision_score(val_targets, preds, zero_division=0)
             
-            if rec >= 0.10:  # Require at least 10% trade frequency in validation folds
+            if rec >= 0.10:  # Require at least 10% trade frequency in validation splits
                 if prec > best_oof_prec:
                     best_oof_prec = prec
                     best_t = t
                     
         self.optimal_threshold = float(best_t)
-        logger.info(f"OOF Threshold Tuning completed. Optimal Threshold: {self.optimal_threshold:.3f} (OOF Precision: {best_oof_prec:.4f})")
+        logger.info(f"TimeSeriesSplit Threshold Tuning completed. Optimal Threshold: {self.optimal_threshold:.3f} (Validation Precision: {best_oof_prec:.4f})")
         
         # 3. Train final model on full training set
         logger.info("Training final model on full training set...")

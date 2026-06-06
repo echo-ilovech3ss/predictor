@@ -12,12 +12,13 @@ from src.alerts import AlertSystem
 from src.data_fetcher import YFinanceProvider
 from src.indicators import calculate_indicators
 from src.features import prepare_data_for_training, extract_features
-from src.market_state import classify_market_state_row
+from src.market_state import classify_market_state_row, classify_market_states
 from src.ml_model import MarketMLModel
 from src.strategy import Strategy
 from src.backtester import Backtester
 from src.paper_trader import PaperTrader
 from src.costs import TAX_DISCLAIMER
+from main import run_walk_forward
 
 # Page Configuration
 st.set_page_config(
@@ -224,6 +225,18 @@ with col_btn:
         st.cache_data.clear()
         st.rerun()
 
+# Check market status
+provider = YFinanceProvider()
+is_open, is_stale, status_msg = provider.check_market_status(symbol_selection, df_data)
+
+# Show alert banner based on market status
+if not is_open:
+    st.info(f"ℹ️ {status_msg}")
+elif is_stale:
+    st.warning(f"⚠️ {status_msg}")
+else:
+    st.success(f"🟢 {status_msg}")
+
 # Run prediction if model exists
 if model_exists:
     features_df = extract_features(df_data)
@@ -240,13 +253,23 @@ else:
 
 # Strategy generation
 strat = Strategy(min_confidence=ml_model.optimal_threshold if model_exists else None)
-signal = strat.generate_signal(latest_row_dict, prob_up, prob_down)
+
+if not is_open or is_stale:
+    signal = {
+        "action": "HOLD",
+        "confidence": 0.50,
+        "prob_up": 0.50,
+        "prob_down": 0.50,
+        "market_state": market_state,
+        "explanation": f"HOLD: Prediction forced to HOLD because market is closed or data is stale ({status_msg})."
+    }
+else:
+    signal = strat.generate_signal(latest_row_dict, prob_up, prob_down, use_ml=model_exists)
 
 # Update paper trader log
 paper_trader = PaperTrader(symbol_selection)
-if model_exists:
-    time_str = latest_time.strftime("%Y-%m-%d %H:%M:%S")
-    paper_trader.process_signal(signal, latest_price, time_str)
+time_str = latest_time.strftime("%Y-%m-%d %H:%M:%S")
+paper_trader.process_signal(signal, latest_row_dict, time_str, is_market_open=is_open, is_data_stale=is_stale)
 
 # Row 1: KPI metrics
 col_rec, col_state, col_probs = st.columns([2, 1, 2])
@@ -397,6 +420,7 @@ st.plotly_chart(fig, use_container_width=True)
 
 # Row 3: Paper Portfolio Status
 st.markdown("### Simulated Paper Portfolio")
+st.warning("⚠️ **Simulated Next-Bar Execution**: When a signal is generated at candle $t$ close, the simulated fill occurs at candle $t+1$ open. True real-time next-open execution would require a live quote/broker feed.")
 
 pt_col1, pt_col2, pt_col3 = st.columns(3)
 with pt_col1:
@@ -475,7 +499,7 @@ if run_backtest_btn:
             start_back = datetime.datetime.now() - datetime.timedelta(days=729)
             end_back = datetime.datetime.now()
             
-            backtest_data = provider.fetch_data(symbol_selection, start_back, end_back)
+            backtest_data = provider.fetch_data(symbol_selection, start_back, end_back, is_live=False)
             if not backtest_data.empty:
                 backtest_data = calculate_indicators(backtest_data)
                 backtest_data['market_state'] = classify_market_states(backtest_data)
@@ -483,57 +507,177 @@ if run_backtest_btn:
                 # Setup backtester
                 backtester = Backtester(backtest_data, symbol_selection)
                 
+                # Split boundary (last 20%)
+                split_idx = int(len(backtest_data) * 0.8)
+                test_start_date = backtest_data.index[split_idx]
+                
                 # Rule only
-                rule_results = backtester.run_backtest(ml_model=None)
+                rule_results = backtester.run_backtest(ml_model=None, test_start_date=test_start_date)
                 
                 # ML only (if model exists)
                 ml_results = None
                 if model_exists:
-                    ml_results = backtester.run_backtest(ml_model)
+                    ml_results = backtester.run_backtest(ml_model, test_start_date=test_start_date)
                     
                 # Display statistics side by side
                 col1, col2 = st.columns(2)
                 
                 with col1:
-                    st.markdown("#### Performance Metrics")
-                    metrics_data = {
-                        "Metric": [
-                            "Starting Capital",
-                            "Trades Count",
-                            "Win Rate",
-                            "Max Drawdown",
-                            "Taxes Paid",
-                            "Fees Paid",
-                            "Net Strategy Return",
-                            "Buy & Hold Return"
-                        ],
-                        "Rule-Only Strategy": [
-                            f"${Config.STARTING_CAPITAL:,.2f}",
-                            f"{rule_results.get('trade_count', 0)}",
-                            f"{rule_results.get('win_rate', 0)*100:.1f}%",
-                            f"{rule_results.get('max_drawdown_pct', 0):.2f}%",
-                            f"${rule_results.get('taxes_paid', 0):,.2f}",
-                            f"${rule_results.get('fees_paid', 0):,.2f}",
-                            f"{rule_results.get('total_return_after_costs_pct', 0):+.2f}%",
-                            f"{rule_results.get('bh_return_after_costs_pct', 0):+.2f}%"
-                        ]
-                    }
+                    st.markdown("#### Performance Metrics by Period")
                     
-                    if ml_results:
-                        metrics_data["ML-Guided Strategy"] = [
-                            f"${Config.STARTING_CAPITAL:,.2f}",
-                            f"{ml_results.get('trade_count', 0)}",
-                            f"{ml_results.get('win_rate', 0)*100:.1f}%",
-                            f"{ml_results.get('max_drawdown_pct', 0):.2f}%",
-                            f"${ml_results.get('taxes_paid', 0):,.2f}",
-                            f"${ml_results.get('fees_paid', 0):,.2f}",
-                            f"{ml_results.get('total_return_after_costs_pct', 0):+.2f}%",
-                            f"{ml_results.get('bh_return_after_costs_pct', 0):+.2f}%"
-                        ]
+                    # Display statistics in tabs
+                    tab_is, tab_oos, tab_full = st.tabs(["In-Sample (IS) Period", "Out-of-Sample (OOS) Period", "Full Backtest Period"])
+                    
+                    with tab_is:
+                        st.write(f"**IS Period**: Start to {test_start_date.date()}")
+                        rule_is = rule_results['is_metrics']
+                        bh_is_ret = rule_results['bh_is_return_pct']
                         
-                    metrics_df = pd.DataFrame(metrics_data)
-                    st.table(metrics_df.set_index("Metric"))
-                    
+                        if rule_is.get('warning_msg'):
+                            st.warning(f"⚠️ **Rule-Only Baseline**: {rule_is['warning_msg']}")
+                        
+                        metrics_is_data = {
+                            "Metric": [
+                                "Net Strategy Return",
+                                "Buy & Hold Return",
+                                "Trades Count",
+                                "Win Rate",
+                                "Max Drawdown"
+                            ],
+                            "Rule-Only Strategy": [
+                                f"{rule_is.get('total_return_pct', 0):+.2f}%",
+                                f"{bh_is_ret:+.2f}%",
+                                f"{rule_is.get('trade_count', 0)}",
+                                f"{rule_is.get('win_rate', 0)*100:.1f}%",
+                                f"{rule_is.get('max_drawdown_pct', 0):.2f}%"
+                            ]
+                        }
+                        
+                        if ml_results:
+                            ml_is = ml_results['is_metrics']
+                            if ml_is.get('warning_msg'):
+                                st.warning(f"⚠️ **ML-Guided Strategy**: {ml_is['warning_msg']}")
+                            
+                            metrics_is_data["ML-Guided Strategy"] = [
+                                f"{ml_is.get('total_return_pct', 0):+.2f}%",
+                                f"{bh_is_ret:+.2f}%",
+                                f"{ml_is.get('trade_count', 0)}",
+                                f"{ml_is.get('win_rate', 0)*100:.1f}%",
+                                f"{ml_is.get('max_drawdown_pct', 0):.2f}%"
+                            ]
+                            
+                            # Add advanced metrics
+                            metrics_is_data["Metric"].extend(["Profit Factor", "Avg Win", "Avg Loss"])
+                            metrics_is_data["Rule-Only Strategy"].extend(["N/A", "N/A", "N/A"])
+                            metrics_is_data["ML-Guided Strategy"].extend([
+                                f"{ml_is.get('profit_factor', 0):.2f}",
+                                f"${ml_is.get('avg_win_cash', 0):,.2f} ({ml_is.get('avg_win_pct', 0):+.2f}%)",
+                                f"${ml_is.get('avg_loss_cash', 0):,.2f} ({ml_is.get('avg_loss_pct', 0):+.2f}%)"
+                            ])
+                            
+                        st.table(pd.DataFrame(metrics_is_data).set_index("Metric"))
+                        
+                    with tab_oos:
+                        st.write(f"**OOS Period**: {test_start_date.date()} to End")
+                        rule_oos = rule_results['oos_metrics']
+                        bh_oos_ret = rule_results['bh_oos_return_pct']
+                        
+                        if rule_oos.get('warning_msg'):
+                            st.warning(f"⚠️ **Rule-Only Baseline**: {rule_oos['warning_msg']}")
+                            
+                        metrics_oos_data = {
+                            "Metric": [
+                                "Net Strategy Return",
+                                "Buy & Hold Return",
+                                "Trades Count",
+                                "Win Rate",
+                                "Max Drawdown"
+                            ],
+                            "Rule-Only Strategy": [
+                                f"{rule_oos.get('total_return_pct', 0):+.2f}%",
+                                f"{bh_oos_ret:+.2f}%",
+                                f"{rule_oos.get('trade_count', 0)}",
+                                f"{rule_oos.get('win_rate', 0)*100:.1f}%",
+                                f"{rule_oos.get('max_drawdown_pct', 0):.2f}%"
+                            ]
+                        }
+                        
+                        if ml_results:
+                            ml_oos = ml_results['oos_metrics']
+                            if ml_oos.get('warning_msg'):
+                                st.warning(f"⚠️ **ML-Guided Strategy**: {ml_oos['warning_msg']}")
+                                
+                            metrics_oos_data["ML-Guided Strategy"] = [
+                                f"{ml_oos.get('total_return_pct', 0):+.2f}%",
+                                f"{bh_oos_ret:+.2f}%",
+                                f"{ml_oos.get('trade_count', 0)}",
+                                f"{ml_oos.get('win_rate', 0)*100:.1f}%",
+                                f"{ml_oos.get('max_drawdown_pct', 0):.2f}%"
+                            ]
+                            
+                            # Add advanced metrics
+                            metrics_oos_data["Metric"].extend(["Profit Factor", "Avg Win", "Avg Loss"])
+                            metrics_oos_data["Rule-Only Strategy"].extend(["N/A", "N/A", "N/A"])
+                            metrics_oos_data["ML-Guided Strategy"].extend([
+                                f"{ml_oos.get('profit_factor', 0):.2f}",
+                                f"${ml_oos.get('avg_win_cash', 0):,.2f} ({ml_oos.get('avg_win_pct', 0):+.2f}%)",
+                                f"${ml_oos.get('avg_loss_cash', 0):,.2f} ({ml_oos.get('avg_loss_pct', 0):+.2f}%)"
+                            ])
+                            
+                        st.table(pd.DataFrame(metrics_oos_data).set_index("Metric"))
+                        
+                    with tab_full:
+                        st.write("**Full Period**: Combined IS + OOS")
+                        rule_full = rule_results['full_metrics']
+                        bh_full_ret = rule_results['bh_full_return_pct']
+                        
+                        if rule_full.get('warning_msg'):
+                            st.warning(f"⚠️ **Rule-Only Baseline**: {rule_full['warning_msg']}")
+                            
+                        metrics_full_data = {
+                            "Metric": [
+                                "Starting Capital",
+                                "Net Strategy Return",
+                                "Buy & Hold Return",
+                                "Trades Count",
+                                "Win Rate",
+                                "Max Drawdown"
+                            ],
+                            "Rule-Only Strategy": [
+                                f"${Config.STARTING_CAPITAL:,.2f}",
+                                f"{rule_full.get('total_return_pct', 0):+.2f}%",
+                                f"{bh_full_ret:+.2f}%",
+                                f"{rule_full.get('trade_count', 0)}",
+                                f"{rule_full.get('win_rate', 0)*100:.1f}%",
+                                f"{rule_full.get('max_drawdown_pct', 0):.2f}%"
+                            ]
+                        }
+                        
+                        if ml_results:
+                            ml_full = ml_results['full_metrics']
+                            if ml_full.get('warning_msg'):
+                                st.warning(f"⚠️ **ML-Guided Strategy**: {ml_full['warning_msg']}")
+                                
+                            metrics_full_data["ML-Guided Strategy"] = [
+                                f"${Config.STARTING_CAPITAL:,.2f}",
+                                f"{ml_full.get('total_return_pct', 0):+.2f}%",
+                                f"{bh_full_ret:+.2f}%",
+                                f"{ml_full.get('trade_count', 0)}",
+                                f"{ml_full.get('win_rate', 0)*100:.1f}%",
+                                f"{ml_full.get('max_drawdown_pct', 0):.2f}%"
+                            ]
+                            
+                            # Add advanced metrics
+                            metrics_full_data["Metric"].extend(["Profit Factor", "Avg Win", "Avg Loss"])
+                            metrics_full_data["Rule-Only Strategy"].extend(["N/A", "N/A", "N/A"])
+                            metrics_full_data["ML-Guided Strategy"].extend([
+                                f"{ml_full.get('profit_factor', 0):.2f}",
+                                f"${ml_full.get('avg_win_cash', 0):,.2f} ({ml_full.get('avg_win_pct', 0):+.2f}%)",
+                                f"${ml_full.get('avg_loss_cash', 0):,.2f} ({ml_full.get('avg_loss_pct', 0):+.2f}%)"
+                            ])
+                            
+                        st.table(pd.DataFrame(metrics_full_data).set_index("Metric"))
+                        
                 with col2:
                     st.markdown("#### Equity Curve Comparison")
                     # Plot equity curves
@@ -557,13 +701,16 @@ if run_backtest_btn:
                         ))
                         
                     # Buy and Hold (Simulated curve from buy to end)
-                    # For a simple baseline, draw a line from starting capital to final B&H equity
+                    bh_final_cap = Config.STARTING_CAPITAL * (1 + bh_full_ret / 100)
                     eq_fig.add_trace(go.Scatter(
                         x=[rule_eq.index[0], rule_eq.index[-1]],
-                        y=[Config.STARTING_CAPITAL, rule_results['bh_final_capital']],
+                        y=[Config.STARTING_CAPITAL, bh_final_cap],
                         mode='lines+markers', name='Buy & Hold (Net)',
                         line=dict(color='#3b82f6', width=1, dash='dash')
                     ))
+                    
+                    # Add vertical line for OOS boundary
+                    eq_fig.add_vline(x=test_start_date, line_width=1.5, line_dash="dash", line_color="#f59e0b", annotation_text="OOS Start")
                     
                     eq_fig.update_layout(
                         height=400,
@@ -589,7 +736,8 @@ if run_backtest_btn:
                             "fees": "Fees Paid",
                             "tax": "Taxes Paid",
                             "net_pnl": "Net PnL",
-                            "reason": "Exit Reason"
+                            "reason": "Exit Reason",
+                            "execution_note": "Execution Note"
                         })
                         st.dataframe(log_df.sort_index(ascending=False), use_container_width=True)
                     else:
@@ -600,3 +748,130 @@ if run_backtest_btn:
         except Exception as e:
             st.error(f"Backtesting error: {e}")
             logger.error(f"Backtest error: {e}", exc_info=True)
+
+# Row 5: Walk-Forward Validation Engine
+st.markdown("---")
+st.markdown("### Walk-Forward Validation (Time-Series Out-of-Sample)")
+st.write("Walk-forward validation simulates real trading by iteratively training a model on historical data, tuning the threshold, and predicting the next out-of-sample window chronologically. This completely eliminates lookahead leakage.")
+run_wf_btn = st.button("Run Walk-Forward Validation (730 days)", type="secondary", key="run_wf")
+
+if run_wf_btn:
+    with st.spinner("Executing walk-forward validation (training multiple rolling models). Please wait..."):
+        try:
+            ml_results, rule_results = run_walk_forward(symbol_selection)
+            
+            # Display results
+            st.success("Walk-forward validation completed successfully!")
+            
+            col_wf1, col_wf2 = st.columns(2)
+            with col_wf1:
+                st.markdown("#### Walk-Forward Performance Metrics (Out-of-Sample)")
+                
+                ml_oos = ml_results['oos_metrics']
+                rule_oos = rule_results['oos_metrics']
+                bh_oos_ret = ml_results['bh_oos_return_pct']
+                
+                if ml_oos.get('warning_msg'):
+                    st.warning(f"⚠️ **ML-Guided Walk-Forward**: {ml_oos['warning_msg']}")
+                if rule_oos.get('warning_msg'):
+                    st.warning(f"⚠️ **Rule-Only Baseline**: {rule_oos['warning_msg']}")
+                    
+                wf_metrics_data = {
+                    "Metric": [
+                        "Net Strategy Return",
+                        "Buy & Hold Return",
+                        "Trades Count",
+                        "Win Rate",
+                        "Max Drawdown",
+                        "Profit Factor",
+                        "Avg Win",
+                        "Avg Loss"
+                    ],
+                    "Rule-Only Baseline (OOS)": [
+                        f"{rule_oos.get('total_return_pct', 0):+.2f}%",
+                        f"{bh_oos_ret:+.2f}%",
+                        f"{rule_oos.get('trade_count', 0)}",
+                        f"{rule_oos.get('win_rate', 0)*100:.1f}%",
+                        f"{rule_oos.get('max_drawdown_pct', 0):.2f}%",
+                        "N/A",
+                        "N/A",
+                        "N/A"
+                    ],
+                    "ML-Guided Walk-Forward (OOS)": [
+                        f"{ml_oos.get('total_return_pct', 0):+.2f}%",
+                        f"{bh_oos_ret:+.2f}%",
+                        f"{ml_oos.get('trade_count', 0)}",
+                        f"{ml_oos.get('win_rate', 0)*100:.1f}%",
+                        f"{ml_oos.get('max_drawdown_pct', 0):.2f}%",
+                        f"{ml_oos.get('profit_factor', 0):.2f}",
+                        f"${ml_oos.get('avg_win_cash', 0):,.2f} ({ml_oos.get('avg_win_pct', 0):+.2f}%)",
+                        f"${ml_oos.get('avg_loss_cash', 0):,.2f} ({ml_oos.get('avg_loss_pct', 0):+.2f}%)"
+                    ]
+                }
+                
+                st.table(pd.DataFrame(wf_metrics_data).set_index("Metric"))
+                
+            with col_wf2:
+                st.markdown("#### Out-of-Sample Equity Curve Comparison")
+                wf_fig = go.Figure()
+                
+                rule_eq = rule_results['equity_curve']
+                oos_start_date = ml_results['oos_start_date']
+                rule_oos_eq = rule_eq.loc[oos_start_date:]
+                
+                wf_fig.add_trace(go.Scatter(
+                    x=rule_oos_eq.index, y=rule_oos_eq.values,
+                    mode='lines', name='Rule-Only Baseline',
+                    line=dict(color='#a855f7', width=1.5)
+                ))
+                
+                ml_eq = ml_results['equity_curve']
+                ml_oos_eq = ml_eq.loc[oos_start_date:]
+                wf_fig.add_trace(go.Scatter(
+                    x=ml_oos_eq.index, y=ml_oos_eq.values,
+                    mode='lines', name='ML-Guided Walk-Forward',
+                    line=dict(color='#10b981', width=2)
+                ))
+                
+                bh_final_cap = ml_results['starting_capital'] * (1 + bh_oos_ret / 100)
+                wf_fig.add_trace(go.Scatter(
+                    x=[oos_start_date, rule_oos_eq.index[-1]],
+                    y=[ml_results['starting_capital'], bh_final_cap],
+                    mode='lines+markers', name='Buy & Hold (Net)',
+                    line=dict(color='#3b82f6', width=1, dash='dash')
+                ))
+                
+                wf_fig.update_layout(
+                    height=400,
+                    template="plotly_dark",
+                    margin=dict(l=20, r=20, t=25, b=20),
+                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+                )
+                st.plotly_chart(wf_fig, use_container_width=True)
+                
+            with st.expander("Show Walk-Forward Completed Trades"):
+                if ml_results['trades']:
+                    wf_trades_df = pd.DataFrame(ml_results['trades'])
+                    wf_trades_df = wf_trades_df[wf_trades_df['entry_time'] >= oos_start_date]
+                    if not wf_trades_df.empty:
+                        wf_trades_df = wf_trades_df.rename(columns={
+                            "entry_time": "Entry Time",
+                            "exit_time": "Exit Time",
+                            "entry_price": "Entry Price",
+                            "exit_price": "Exit Price",
+                            "qty": "Quantity",
+                            "gross_pnl": "Gross PnL",
+                            "fees": "Fees Paid",
+                            "tax": "Taxes Paid",
+                            "net_pnl": "Net PnL",
+                            "reason": "Exit Reason",
+                            "execution_note": "Execution Note"
+                        })
+                        st.dataframe(wf_trades_df.sort_index(ascending=False), use_container_width=True)
+                    else:
+                        st.info("No trades executed in the Out-of-Sample Walk-Forward period.")
+                else:
+                    st.info("No trades executed in the Walk-Forward period.")
+        except Exception as e:
+            st.error(f"Walk-Forward validation error: {e}")
+            logger.error(f"Walk-Forward validation error: {e}", exc_info=True)

@@ -11,7 +11,7 @@ class BaseDataProvider(ABC):
     """Abstract Base Class for Market Data Providers."""
     
     @abstractmethod
-    def fetch_data(self, symbol: str, start: datetime.datetime, end: datetime.datetime) -> pd.DataFrame:
+    def fetch_data(self, symbol: str, start: datetime.datetime, end: datetime.datetime, is_live: bool = False) -> pd.DataFrame:
         """Fetch historical candle data (OHLCV)."""
         pass
 
@@ -48,7 +48,7 @@ class YFinanceProvider(BaseDataProvider):
             return "NIFTY"
         return "SPY"  # Default to SPY/US
         
-    def fetch_data(self, symbol: str, start: datetime.datetime = None, end: datetime.datetime = None) -> pd.DataFrame:
+    def fetch_data(self, symbol: str, start: datetime.datetime = None, end: datetime.datetime = None, is_live: bool = False) -> pd.DataFrame:
         """
         Fetch 1-hour OHLCV data using yfinance. 
         Uses local CSV caching to accumulate historical data beyond yfinance's 730-day limit.
@@ -144,7 +144,7 @@ class YFinanceProvider(BaseDataProvider):
             try:
                 logger.info("NIFTY symbol detected: Merging overnight SPY cross-market features...")
                 # Fetch SPY data recursively using UTC zone alignment (start 2 days earlier to avoid start boundary NaNs)
-                spy_df = self.fetch_data("SPY", start - datetime.timedelta(days=2), end)
+                spy_df = self.fetch_data("SPY", start - datetime.timedelta(days=2), end, is_live=is_live)
                 if not spy_df.empty:
                     # Calculate SPY returns
                     spy_df['spy_returns'] = spy_df['close'].pct_change().fillna(0)
@@ -172,20 +172,18 @@ class YFinanceProvider(BaseDataProvider):
             except Exception as e:
                 logger.error(f"Failed to merge cross-market SPY features: {e}")
         
-        # Validate data recency
-        self.validate_recency(filtered_df, symbol)
+        # Validate data recency ONLY if live prediction mode
+        if is_live:
+            self.validate_recency(filtered_df, symbol)
         
         return filtered_df
         
     def _download_from_yfinance(self, symbol: str, start: datetime.datetime, end: datetime.datetime) -> pd.DataFrame:
         """Download raw data from yfinance API directly."""
         try:
-            # yfinance uses string dates or datetime objects
-            # Download with 1h interval
             ticker = yf.Ticker(symbol)
             df = ticker.history(start=start, end=end, interval="1h")
             if df.empty:
-                # Fallback to history with period if start is too far back
                 logger.warning(f"yfinance returned empty for {symbol} in dates {start} to {end}. Trying max period...")
                 df = ticker.history(period="730d", interval="1h")
             return df
@@ -196,7 +194,6 @@ class YFinanceProvider(BaseDataProvider):
     def validate_recency(self, df: pd.DataFrame, symbol: str) -> bool:
         """
         Validate if the data is recent based on the market timezone and trading hours.
-        Weekends, holidays, and overnight gaps should not trigger a data failure.
         """
         if df.empty:
             AlertSystem.trigger_alert(f"Validation failed: empty DataFrame for {symbol}", halt_system=True)
@@ -206,10 +203,8 @@ class YFinanceProvider(BaseDataProvider):
         config = self.MARKET_CONFIGS[config_key]
         tz = pytz.timezone(config["timezone"])
         
-        # Current time in symbol's timezone
         now_tz = datetime.datetime.now(tz)
         
-        # Last candle timestamp in localized DataFrame
         last_timestamp = df.index[-1]
         if last_timestamp.tzinfo is None:
             last_timestamp = tz.localize(last_timestamp)
@@ -218,18 +213,69 @@ class YFinanceProvider(BaseDataProvider):
             
         logger.info(f"Recency check for {symbol}: Last candle timestamp is {last_timestamp}. Current time is {now_tz}.")
         
-        # Check if the gap is unacceptable (e.g. > 96 hours to allow for long holidays/weekends)
         time_gap = now_tz - last_timestamp
-        
-        # Calculate expected gap based on weekend or holiday
-        # If it's Saturday or Sunday, we expect a larger gap
         max_acceptable_hours = 96 if now_tz.weekday() in (5, 6) else 24
         
         if time_gap > datetime.timedelta(hours=max_acceptable_hours):
-            # Stale data alert
             msg = f"Data for {symbol} is stale. Last candle is {last_timestamp} (gap of {time_gap.total_seconds() / 3600:.1f} hours)."
             AlertSystem.trigger_alert(msg, level="WARNING", halt_system=False)
             return False
             
         logger.info(f"Recency check passed for {symbol}.")
         return True
+
+    def check_market_status(self, symbol: str, df: pd.DataFrame) -> tuple[bool, bool, str]:
+        """
+        Check if the market is currently open and if the downloaded data is stale.
+        Returns: (is_open, is_stale, message)
+        """
+        config_key = self._get_config_key(symbol)
+        config = self.MARKET_CONFIGS[config_key]
+        tz = pytz.timezone(config["timezone"])
+        start_time = config["market_start"]
+        end_time = config["market_end"]
+        
+        now_tz = datetime.datetime.now(tz)
+        
+        # Check weekend
+        is_open = True
+        reason = ""
+        
+        if now_tz.weekday() in (5, 6):
+            is_open = False
+            reason = "weekend"
+        else:
+            t = now_tz.time()
+            if t < start_time or t > end_time:
+                is_open = False
+                reason = "outside market hours"
+                
+        if df.empty:
+            return is_open, True, "No market data available."
+            
+        last_timestamp = df.index[-1]
+        if last_timestamp.tzinfo is None:
+            last_timestamp = tz.localize(last_timestamp)
+        else:
+            last_timestamp = last_timestamp.tz_convert(tz)
+            
+        time_gap = now_tz - last_timestamp
+        
+        is_stale = False
+        if is_open:
+            # If market is open, the latest candle should be within 2 hours
+            if time_gap > datetime.timedelta(hours=2):
+                is_stale = True
+                reason = f"latest candle is stale (gap of {time_gap.total_seconds() / 3600:.1f} hours during market hours; likely a market holiday or feed lag)"
+        else:
+            # If market is closed, we expect the latest candle to match the last market close.
+            if time_gap > datetime.timedelta(hours=96):
+                is_stale = True
+                reason = f"latest candle is extremely old (gap of {time_gap.total_seconds() / 3600:.1f} hours)"
+                
+        if not is_open:
+            return False, is_stale, f"Market is currently closed ({reason}). Latest candle: {last_timestamp.strftime('%Y-%m-%d %H:%M')}"
+        elif is_stale:
+            return True, True, f"Market is open, but data is stale: {reason}."
+        else:
+            return True, False, f"Market is open, data is fresh. Latest candle: {last_timestamp.strftime('%Y-%m-%d %H:%M')}"

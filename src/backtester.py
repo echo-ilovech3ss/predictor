@@ -20,13 +20,17 @@ class Backtester:
         self.risk_manager = RiskManager()
         self.strategy = Strategy()
         
-    def run_backtest(self, ml_model=None) -> dict:
+    def run_backtest(self, ml_model=None, test_start_date=None,
+                     pred_prob_up=None, pred_prob_down=None,
+                     dynamic_thresholds=None) -> dict:
         """
-        Run backtest loop. If ml_model is provided, uses ML strategy.
+        Run backtest loop. If ml_model is provided or pre-calculated predictions are passed, uses ML strategy.
         Otherwise, runs rule-only baseline.
         """
         logger.info(f"Starting backtest for {self.symbol} ({self.market} market) on {len(self.df)} candles...")
         
+        # Determine confidence threshold
+        use_ml = (ml_model is not None or pred_prob_up is not None)
         if ml_model is not None and hasattr(ml_model, 'optimal_threshold') and ml_model.optimal_threshold is not None:
             self.strategy.min_confidence = ml_model.optimal_threshold
             logger.info(f"Using model's saved optimal threshold: {self.strategy.min_confidence:.3f}")
@@ -43,6 +47,9 @@ class Backtester:
         day_start_equity = cash
         today_trades_count = 0
         
+        # Track OOS start equity
+        equity_at_oos_start = None
+        
         # We start the backtest after we have enough historical bars for indicators (200 bars)
         start_idx = 200
         if len(self.df) <= start_idx:
@@ -50,21 +57,13 @@ class Backtester:
             return {}
             
         # If we are using ML model, generate probabilities first
-        if ml_model is not None:
+        if pred_prob_up is not None and pred_prob_down is not None:
+            prob_up_series = pred_prob_up
+            prob_down_series = pred_prob_down
+        elif use_ml:
             from src.features import extract_features
             features = extract_features(self.df)
-            # Predict probabilities
-            prob_up_list = []
-            prob_down_list = []
-            
-            # Predict row-by-row or batch. Batch is faster.
-            # However, scaling is already fitted on training set.
-            # We can run predict_proba on the whole set (excluding NaNs) and align.
-            # To prevent any lookahead, we do it safely:
-            # ml_model.predict_proba will transform the features.
-            # Filter features to match the trained features list
             X_feats = features.loc[self.df.index[start_idx:]]
-            # Fill NaNs to prevent model errors
             X_feats = X_feats.fillna(0)
             
             # Predict batch
@@ -75,86 +74,46 @@ class Backtester:
                     p = ml_model.predict_proba(row_df)
                     probas.append(p)
                 except Exception as e:
-                    # Fallback to neutral if prediction fails
                     probas.append([0.5, 0.5])
                     
             probas = np.array(probas)
             prob_down_series = pd.Series(probas[:, 0], index=X_feats.index)
             prob_up_series = pd.Series(probas[:, 1], index=X_feats.index)
         else:
-            # Rule-only baseline has no ML probabilities (neutral 50/50)
+            # Rule-only baseline has no ML probabilities
             prob_down_series = pd.Series(0.5, index=self.df.index[start_idx:])
             prob_up_series = pd.Series(0.5, index=self.df.index[start_idx:])
             
         pending_signal = None  # BUY, SELL, or None
         
         # Loop candle by candle
-        for i in range(start_idx, len(self.df) - 1):
+        for i in range(start_idx, len(self.df)):
             t_now = self.df.index[i]
-            t_next = self.df.index[i+1]
-            
             candle_now = self.df.iloc[i]
-            candle_next = self.df.iloc[i+1]
             
             # 1. Update daily reset for risk manager
             candle_date = t_now.date()
             if current_day != candle_date:
                 current_day = candle_date
-                # Calculate current equity
                 current_equity = cash
                 if position is not None:
                     current_equity += position['qty'] * candle_now['close']
                 day_start_equity = current_equity
                 today_trades_count = 0
                 
-            # 2. Check Stop Loss on current candle
-            if position is not None:
-                # Did price touch or fall below stop loss?
-                # We check the low of the current candle
-                if candle_now['low'] <= position['stop_loss']:
-                    # Exit at stop loss price (or open if open was already lower)
-                    exit_price = min(candle_now['open'], position['stop_loss'])
-                    
-                    # Calculate exit costs
-                    exit_costs = CostCalculator.calculate_exit_costs(exit_price, position['qty'], self.market)
-                    exit_val = exit_price * position['qty']
-                    entry_val = position['entry_price'] * position['qty']
-                    
-                    # Calculate tax
-                    tax = CostCalculator.calculate_tax_on_profit(
-                        entry_val, exit_val, position['entry_costs'], exit_costs, self.market
-                    )
-                    
-                    realized_cash = exit_val - exit_costs - tax
-                    cash += realized_cash
-                    
-                    net_pnl = (exit_val - exit_costs - tax) - (entry_val + position['entry_costs'])
-                    gross_pnl = exit_val - entry_val
-                    
-                    trades.append({
-                        'entry_time': position['entry_time'],
-                        'exit_time': t_now,
-                        'entry_price': position['entry_price'],
-                        'exit_price': exit_price,
-                        'qty': position['qty'],
-                        'gross_pnl': gross_pnl,
-                        'fees': position['entry_costs'] + exit_costs,
-                        'tax': tax,
-                        'net_pnl': net_pnl,
-                        'reason': 'STOP_LOSS'
-                    })
-                    
-                    position = None
-                    pending_signal = None  # Cancel any pending exits
-                    
-            # 3. Execute Pending Signal at t+1 Open (candle_next['open'])
+            # Track portfolio equity at the start of the Out-of-Sample period
+            if test_start_date is not None and t_now >= test_start_date and equity_at_oos_start is None:
+                current_equity = cash
+                if position is not None:
+                    current_equity += position['qty'] * candle_now['close']
+                equity_at_oos_start = current_equity
+                logger.info(f"OOS period started at {t_now}. Initial OOS Equity: {equity_at_oos_start:.2f}")
+
+            # 2. Execute Pending Signal at t+1 Open (which is candle_now['open'] of this iteration)
             if pending_signal == "BUY" and position is None:
-                # Check if risk manager allows trade
                 current_equity = cash
                 if self.risk_manager.can_open_position(day_start_equity, current_equity, today_trades_count):
-                    # Enter trade
-                    entry_price = candle_next['open']
-                    # Calculate shares to buy using max size
+                    entry_price = candle_now['open']
                     shares = self.risk_manager.calculate_position_size(entry_price, cash)
                     if shares > 0:
                         entry_costs = CostCalculator.calculate_entry_costs(entry_price, shares, self.market)
@@ -173,23 +132,20 @@ class Backtester:
                             position = {
                                 'entry_price': entry_price,
                                 'qty': shares,
-                                'entry_time': t_next,
+                                'entry_time': t_now,
                                 'entry_costs': entry_costs,
                                 'stop_loss': stop_loss_val
                             }
                             today_trades_count += 1
-                            logger.debug(f"Executed BUY at {t_next} - Price: {entry_price:.2f}, Qty: {shares:.2f}")
-                            
+                            logger.debug(f"Executed BUY at {t_now} (Next-Bar Open) - Price: {entry_price:.2f}, Qty: {shares:.2f}")
                 pending_signal = None
                 
             elif pending_signal == "SELL" and position is not None:
-                # Exit trade at open of t+1
-                exit_price = candle_next['open']
+                exit_price = candle_now['open']
                 exit_costs = CostCalculator.calculate_exit_costs(exit_price, position['qty'], self.market)
                 exit_val = exit_price * position['qty']
                 entry_val = position['entry_price'] * position['qty']
                 
-                # Tax on profit
                 tax = CostCalculator.calculate_tax_on_profit(
                     entry_val, exit_val, position['entry_costs'], exit_costs, self.market
                 )
@@ -197,12 +153,12 @@ class Backtester:
                 realized_cash = exit_val - exit_costs - tax
                 cash += realized_cash
                 
-                net_pnl = (exit_val - exit_costs - tax) - (entry_val + position['entry_costs'])
+                net_pnl = realized_cash - (entry_val + position['entry_costs'])
                 gross_pnl = exit_val - entry_val
                 
                 trades.append({
                     'entry_time': position['entry_time'],
-                    'exit_time': t_next,
+                    'exit_time': t_now,
                     'entry_price': position['entry_price'],
                     'exit_price': exit_price,
                     'qty': position['qty'],
@@ -215,9 +171,43 @@ class Backtester:
                 
                 position = None
                 pending_signal = None
-                logger.debug(f"Executed SELL at {t_next} - Price: {exit_price:.2f}")
-                
-            # 4. Generate next signal at close of current candle t
+                logger.debug(f"Executed SELL at {t_now} (Next-Bar Open) - Price: {exit_price:.2f}")
+
+            # 3. Check Stop Loss on current candle_now (after next-bar entry executes)
+            if position is not None:
+                if candle_now['low'] <= position['stop_loss']:
+                    exit_price = min(candle_now['open'], position['stop_loss'])
+                    exit_costs = CostCalculator.calculate_exit_costs(exit_price, position['qty'], self.market)
+                    exit_val = exit_price * position['qty']
+                    entry_val = position['entry_price'] * position['qty']
+                    
+                    tax = CostCalculator.calculate_tax_on_profit(
+                        entry_val, exit_val, position['entry_costs'], exit_costs, self.market
+                    )
+                    
+                    realized_cash = exit_val - exit_costs - tax
+                    cash += realized_cash
+                    
+                    net_pnl = realized_cash - (entry_val + position['entry_costs'])
+                    gross_pnl = exit_val - entry_val
+                    
+                    trades.append({
+                        'entry_time': position['entry_time'],
+                        'exit_time': t_now,
+                        'entry_price': position['entry_price'],
+                        'exit_price': exit_price,
+                        'qty': position['qty'],
+                        'gross_pnl': gross_pnl,
+                        'fees': position['entry_costs'] + exit_costs,
+                        'tax': tax,
+                        'net_pnl': net_pnl,
+                        'reason': 'STOP_LOSS'
+                    })
+                    
+                    position = None
+                    pending_signal = None
+                    
+            # 4. Generate next signal at the close of current candle t_now
             row_dict = {
                 'close': candle_now['close'],
                 'ema_20': candle_now['ema_20'],
@@ -236,8 +226,11 @@ class Backtester:
             p_up = prob_up_series.loc[t_now]
             p_down = prob_down_series.loc[t_now]
             
-            # Evaluate strategy
-            signal_res = self.strategy.generate_signal(row_dict, p_up, p_down)
+            # Dynamic threshold override for walk-forward OOS period
+            if dynamic_thresholds is not None and t_now in dynamic_thresholds.index:
+                self.strategy.min_confidence = float(dynamic_thresholds.loc[t_now])
+                
+            signal_res = self.strategy.generate_signal(row_dict, p_up, p_down, use_ml=use_ml)
             
             if signal_res['action'] == "BUY" and position is None:
                 pending_signal = "BUY"
@@ -269,7 +262,7 @@ class Backtester:
             realized_cash = exit_val - exit_costs - tax
             cash += realized_cash
             
-            net_pnl = (exit_val - exit_costs - tax) - (entry_val + position['entry_costs'])
+            net_pnl = realized_cash - (entry_val + position['entry_costs'])
             gross_pnl = exit_val - entry_val
             
             trades.append({
@@ -285,68 +278,140 @@ class Backtester:
                 'reason': 'FORCE_CLOSE_BACKTEST'
             })
             
-            # Append final equity point
             equity_curve.append(cash)
             timestamps.append(t_last)
             
-        # Compute performance stats
         equity_series = pd.Series(equity_curve, index=timestamps)
         
-        # Buy and Hold Baseline
-        bh_start_price = self.df['open'].iloc[start_idx]
-        bh_end_price = self.df['close'].iloc[-1]
-        bh_qty = Config.STARTING_CAPITAL / bh_start_price
-        bh_gross_return = (bh_end_price - bh_start_price) * bh_qty
+        # 5. Calculate Partitioned Performance Metrics
+        def compute_sub_metrics(sub_trades, start_capital, final_equity_curve=None):
+            if not sub_trades:
+                return {
+                    'trade_count': 0,
+                    'win_rate': 0.0,
+                    'total_return_pct': 0.0,
+                    'profit_factor': 1.0,
+                    'avg_win_cash': 0.0,
+                    'avg_loss_cash': 0.0,
+                    'avg_win_pct': 0.0,
+                    'avg_loss_pct': 0.0,
+                    'max_drawdown_pct': 0.0,
+                    'warning_msg': "WARNING: Trade count is too low (N < 5) to draw statistically meaningful conclusions."
+                }
+            
+            win_trades = [t for t in sub_trades if t['net_pnl'] > 0]
+            loss_trades = [t for t in sub_trades if t['net_pnl'] <= 0]
+            win_rate = len(win_trades) / len(sub_trades)
+            
+            total_net_pnl = sum([t['net_pnl'] for t in sub_trades])
+            total_return_pct = (total_net_pnl / start_capital) * 100
+            
+            gross_profits = sum([t['net_pnl'] for t in win_trades])
+            gross_losses = abs(sum([t['net_pnl'] for t in loss_trades]))
+            profit_factor = gross_profits / gross_losses if gross_losses > 0 else (np.inf if gross_profits > 0 else 1.0)
+            
+            avg_win_cash = np.mean([t['net_pnl'] for t in win_trades]) if win_trades else 0.0
+            avg_loss_cash = np.mean([t['net_pnl'] for t in loss_trades]) if loss_trades else 0.0
+            
+            avg_win_pct = np.mean([t['net_pnl'] / (t['entry_price'] * t['qty']) for t in win_trades]) * 100 if win_trades else 0.0
+            avg_loss_pct = np.mean([t['net_pnl'] / (t['entry_price'] * t['qty']) for t in loss_trades]) * 100 if loss_trades else 0.0
+            
+            max_dd_pct = 0.0
+            if final_equity_curve is not None and len(final_equity_curve) > 0:
+                peaks = final_equity_curve.cummax()
+                drawdowns = (final_equity_curve - peaks) / peaks
+                max_dd_pct = drawdowns.min() * 100
+                
+            warning_msg = None
+            if len(sub_trades) < 5:
+                warning_msg = "WARNING: Trade count is too low (N < 5) to draw statistically meaningful conclusions."
+                
+            return {
+                'trade_count': len(sub_trades),
+                'win_rate': win_rate,
+                'total_return_pct': total_return_pct,
+                'profit_factor': profit_factor,
+                'avg_win_cash': avg_win_cash,
+                'avg_loss_cash': avg_loss_cash,
+                'avg_win_pct': avg_win_pct,
+                'avg_loss_pct': avg_loss_pct,
+                'max_drawdown_pct': max_dd_pct,
+                'warning_msg': warning_msg
+            }
+            
+        # Parse IS vs OOS trades
+        if test_start_date is not None:
+            is_trades = [t for t in trades if t['entry_time'] < test_start_date]
+            oos_trades = [t for t in trades if t['entry_time'] >= test_start_date]
+            
+            # Divide equity curve
+            is_equity = equity_series.loc[:test_start_date]
+            oos_equity = equity_series.loc[test_start_date:]
+        else:
+            is_trades = trades
+            oos_trades = []
+            is_equity = equity_series
+            oos_equity = pd.Series(dtype=float)
+            
+        is_cap = Config.STARTING_CAPITAL
+        oos_cap = equity_at_oos_start if equity_at_oos_start is not None else Config.STARTING_CAPITAL
         
-        # Calculate B&H net return (subject to entry, exit, and tax if profitable)
-        bh_entry_costs = CostCalculator.calculate_entry_costs(bh_start_price, bh_qty, self.market)
-        bh_exit_costs = CostCalculator.calculate_exit_costs(bh_end_price, bh_qty, self.market)
-        bh_tax = CostCalculator.calculate_tax_on_profit(
-            bh_start_price * bh_qty, bh_end_price * bh_qty, bh_entry_costs, bh_exit_costs, self.market
-        )
-        bh_net_return = bh_gross_return - bh_entry_costs - bh_exit_costs - bh_tax
-        bh_final_equity = Config.STARTING_CAPITAL + bh_net_return
+        is_metrics = compute_sub_metrics(is_trades, is_cap, is_equity)
+        oos_metrics = compute_sub_metrics(oos_trades, oos_cap, oos_equity)
+        full_metrics = compute_sub_metrics(trades, Config.STARTING_CAPITAL, equity_series)
         
-        # Strategy returns calculations
-        total_net_pnl = sum([t['net_pnl'] for t in trades])
-        total_gross_pnl = sum([t['gross_pnl'] for t in trades])
-        total_fees = sum([t['fees'] for t in trades])
-        total_tax = sum([t['tax'] for t in trades])
+        # 6. Buy and Hold Baselines
+        def calculate_bh_net_return(start_p, end_p, cap):
+            bh_qty = cap / start_p
+            bh_gross_return = (end_p - start_p) * bh_qty
+            bh_entry_costs = CostCalculator.calculate_entry_costs(start_p, bh_qty, self.market)
+            bh_exit_costs = CostCalculator.calculate_exit_costs(end_p, bh_qty, self.market)
+            bh_tax = CostCalculator.calculate_tax_on_profit(
+                start_p * bh_qty, end_p * bh_qty, bh_entry_costs, bh_exit_costs, self.market
+            )
+            bh_net_return = bh_gross_return - bh_entry_costs - bh_exit_costs - bh_tax
+            return (bh_net_return / cap) * 100
+            
+        bh_start_full = self.df['open'].iloc[start_idx]
+        bh_end_full = self.df['close'].iloc[-1]
+        bh_full_return = calculate_bh_net_return(bh_start_full, bh_end_full, Config.STARTING_CAPITAL)
         
-        win_trades = [t for t in trades if t['net_pnl'] > 0]
-        loss_trades = [t for t in trades if t['net_pnl'] <= 0]
-        win_rate = len(win_trades) / len(trades) if trades else 0.0
-        
-        # Max drawdown
-        peaks = equity_series.cummax()
-        drawdowns = (equity_series - peaks) / peaks
-        max_drawdown = drawdowns.min()
-        
-        # Profit factor
-        gross_profits = sum([t['net_pnl'] for t in win_trades])
-        gross_losses = abs(sum([t['net_pnl'] for t in loss_trades]))
-        profit_factor = gross_profits / gross_losses if gross_losses > 0 else (np.inf if gross_profits > 0 else 1.0)
-        
-        # Avg trade return pct
-        avg_trade_return_pct = np.mean([t['net_pnl'] / (t['entry_price'] * t['qty']) for t in trades]) * 100 if trades else 0.0
-        
+        if test_start_date is not None:
+            # Out-of-sample buy and hold starts at test_start_date open
+            # Find closest index to test_start_date
+            oos_indices = self.df.index[self.df.index >= test_start_date]
+            if len(oos_indices) > 0:
+                bh_start_oos = self.df.loc[oos_indices[0], 'open']
+                bh_end_oos = self.df['close'].iloc[-1]
+                bh_oos_return = calculate_bh_net_return(bh_start_oos, bh_end_oos, oos_cap)
+            else:
+                bh_oos_return = 0.0
+                
+            # In-sample buy and hold ends at test_start_date open
+            is_indices = self.df.index[self.df.index < test_start_date]
+            if len(is_indices) > 0:
+                bh_start_is = self.df['open'].iloc[start_idx]
+                bh_end_is = self.df.loc[is_indices[-1], 'close']
+                bh_is_return = calculate_bh_net_return(bh_start_is, bh_end_is, Config.STARTING_CAPITAL)
+            else:
+                bh_is_return = 0.0
+        else:
+            bh_is_return = bh_full_return
+            bh_oos_return = 0.0
+            
         metrics = {
             'starting_capital': Config.STARTING_CAPITAL,
             'final_capital_after_costs': cash,
-            'total_return_before_costs_pct': (total_gross_pnl / Config.STARTING_CAPITAL) * 100,
-            'total_return_after_costs_pct': (total_net_pnl / Config.STARTING_CAPITAL) * 100,
-            'fees_paid': total_fees,
-            'taxes_paid': total_tax,
-            'trade_count': len(trades),
-            'win_rate': win_rate,
-            'max_drawdown_pct': max_drawdown * 100,
-            'profit_factor': profit_factor,
-            'avg_trade_return_pct': avg_trade_return_pct,
             'trades': trades,
             'equity_curve': equity_series,
-            'bh_return_after_costs_pct': (bh_net_return / Config.STARTING_CAPITAL) * 100,
-            'bh_final_capital': bh_final_equity
+            'is_metrics': is_metrics,
+            'oos_metrics': oos_metrics,
+            'full_metrics': full_metrics,
+            'bh_full_return_pct': bh_full_return,
+            'bh_is_return_pct': bh_is_return,
+            'bh_oos_return_pct': bh_oos_return,
+            'oos_start_date': test_start_date
         }
         
-        logger.info(f"Backtest completed. Final Capital: {cash:.2f}, Trades: {len(trades)}, Win Rate: {win_rate*100:.2f}%, Max Drawdown: {max_drawdown*100:.2f}%")
+        logger.info(f"Backtest completed. Final Capital: {cash:.2f}, Trades: {len(trades)}, Win Rate: {full_metrics['win_rate']*100:.2f}%, Max Drawdown: {full_metrics['max_drawdown_pct']:.2f}%")
         return metrics

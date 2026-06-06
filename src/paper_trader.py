@@ -19,6 +19,8 @@ class PaperTrader:
         self.cash = Config.STARTING_CAPITAL
         self.position = None  # Holds active position dictionary or None
         self.trades = []      # Closed trades list
+        self.queued_signal = None
+        self.last_processed_time = None
         
         self.load_state()
         
@@ -28,6 +30,8 @@ class PaperTrader:
             self.cash = Config.STARTING_CAPITAL
             self.position = None
             self.trades = []
+            self.queued_signal = None
+            self.last_processed_time = None
             self.save_state()
             logger.info(f"Initialized new paper trader state for {self.symbol} at {self.state_path}")
             return
@@ -38,19 +42,25 @@ class PaperTrader:
             self.cash = float(state.get("cash", Config.STARTING_CAPITAL))
             self.position = state.get("position", None)
             self.trades = state.get("trades", [])
+            self.queued_signal = state.get("queued_signal", None)
+            self.last_processed_time = state.get("last_processed_time", None)
             logger.info(f"Loaded paper trader state for {self.symbol}. Balance: {self.cash:.2f}")
         except Exception as e:
             logger.error(f"Error loading paper trader state: {e}. Reverting to defaults.")
             self.cash = Config.STARTING_CAPITAL
             self.position = None
             self.trades = []
+            self.queued_signal = None
+            self.last_processed_time = None
             
     def save_state(self):
         """Save current state to file."""
         state = {
             "cash": self.cash,
             "position": self.position,
-            "trades": self.trades
+            "trades": self.trades,
+            "queued_signal": self.queued_signal,
+            "last_processed_time": self.last_processed_time
         }
         try:
             with open(self.state_path, "w") as f:
@@ -78,53 +88,68 @@ class PaperTrader:
             
         return False
         
-    def process_signal(self, signal_res: dict, current_price: float, current_time: str):
-        """Process a BUY, SELL, or HOLD signal in paper trading."""
-        action = signal_res.get("action", "HOLD")
-        
-        # 1. Update stop loss first
-        stop_loss_hit = self.check_and_apply_stop_loss(current_price, current_time)
-        if stop_loss_hit:
-            # Stopped out, do not enter again immediately in the same cycle
+    def process_signal(self, signal_res: dict, latest_row: dict, current_time: str, is_market_open: bool, is_data_stale: bool):
+        """Process a BUY, SELL, or HOLD signal in paper trading using next-bar open execution logic."""
+        if not is_market_open or is_data_stale:
+            logger.warning(f"Paper trading execution blocked: Market is closed or data is stale. Forcing HOLD.")
+            signal_res["action"] = "HOLD"
+            signal_res["explanation"] = f"HOLD: Execution blocked due to closed or stale market."
             return
             
-        # 2. Check risk manager limits (today's trade count)
-        today_date = datetime.datetime.now().date()
-        today_trades_count = 0
-        for t in self.trades:
-            exit_time_str = t.get("exit_time", "")
-            try:
-                # Expecting format 'YYYY-MM-DD HH:MM:SS' or ISO format
-                exit_date = datetime.datetime.fromisoformat(exit_time_str).date()
-                if exit_date == today_date:
-                    today_trades_count += 1
-            except ValueError:
-                # Try parsing with split in case of space
-                if " " in exit_time_str:
-                    try:
-                        exit_date = datetime.datetime.strptime(exit_time_str.split(" ")[0], "%Y-%m-%d").date()
-                        if exit_date == today_date:
-                            today_trades_count += 1
-                    except Exception:
-                        pass
-        
-        # Calculate daily starting capital (approximate using cash at start of day)
-        # For simplicity, we can use Config.STARTING_CAPITAL or self.get_equity(current_price)
-        current_equity = self.get_equity(current_price)
-        
-        if action == "BUY" and self.position is None:
-            # Can we trade?
-            if self.risk_manager.can_open_position(self.cash, current_equity, today_trades_count):
-                self._open_position(current_price, current_time)
-            else:
-                logger.info(f"BUY signal rejected by Risk Manager for {self.symbol}.")
+        if self.last_processed_time == current_time:
+            logger.info(f"Skipping prediction processing: candle at {current_time} was already processed.")
+            return
+
+        # 1. Execute any queued signal at the current candle's open
+        if self.queued_signal is not None:
+            logger.info("Simulated next-candle open execution filled. True real-time next-open execution would require a live quote/broker feed.")
+            
+            entry_price = latest_row['open']
+            
+            # Check risk manager limits for today
+            today_date = datetime.datetime.now().date()
+            today_trades_count = 0
+            for t in self.trades:
+                exit_time_str = t.get("exit_time", "")
+                try:
+                    exit_date = datetime.datetime.fromisoformat(exit_time_str).date()
+                    if exit_date == today_date:
+                        today_trades_count += 1
+                except Exception:
+                    pass
+            
+            current_equity = self.get_equity(latest_row['close'])
+            
+            if self.queued_signal == "BUY" and self.position is None:
+                if self.risk_manager.can_open_position(self.cash, current_equity, today_trades_count):
+                    self._open_position(entry_price, current_time)
+                else:
+                    logger.info(f"Queued BUY signal rejected by Risk Manager for {self.symbol}.")
+            elif self.queued_signal == "SELL" and self.position is not None:
+                self._close_position(entry_price, current_time, reason="STRATEGY_EXIT")
                 
-        elif action == "SELL" and self.position is not None:
-            self._close_position(current_price, current_time, reason="STRATEGY_EXIT")
-            
+            self.queued_signal = None
+
+        # 2. Check Stop Loss on the current candle (using low price)
+        if self.position is not None:
+            if latest_row['low'] <= self.position['stop_loss']:
+                exit_price = min(latest_row['open'], self.position['stop_loss'])
+                logger.warning(f"Stop Loss triggered in paper trading for {self.symbol} at price {exit_price:.2f}!")
+                self._close_position(exit_price, current_time, reason="STOP_LOSS")
+
+        # 3. Queue the new signal generated from the close of this candle
+        action = signal_res.get("action", "HOLD")
+        if action in ("BUY", "SELL"):
+            if action == "BUY" and self.position is None:
+                self.queued_signal = "BUY"
+                logger.info(f"Queued BUY signal for {self.symbol} to execute at next candle open.")
+            elif action == "SELL" and self.position is not None:
+                self.queued_signal = "SELL"
+                logger.info(f"Queued SELL signal for {self.symbol} to execute at next candle open.")
         else:
-            logger.debug(f"Paper trading action for {self.symbol} is HOLD.")
-            
+            self.queued_signal = None
+
+        self.last_processed_time = current_time
         self.save_state()
         
     def _open_position(self, price: float, time_str: str):
@@ -152,7 +177,8 @@ class PaperTrader:
                 "qty": float(shares),
                 "entry_time": time_str,
                 "entry_costs": float(entry_costs),
-                "stop_loss": float(stop_loss)
+                "stop_loss": float(stop_loss),
+                "execution_note": "Simulated next-candle open fill. True real-time next-open execution requires a live quote/broker feed."
             }
             logger.info(f"Simulated BUY of {shares:.2f} shares of {self.symbol} at {price:.2f}. SL: {stop_loss:.2f}")
         else:
@@ -188,7 +214,8 @@ class PaperTrader:
             "fees": float(self.position["entry_costs"] + exit_costs),
             "tax": float(tax),
             "net_pnl": float(net_pnl),
-            "reason": reason
+            "reason": reason,
+            "execution_note": self.position.get("execution_note", "")
         }
         
         self.trades.append(trade_record)
@@ -202,5 +229,7 @@ class PaperTrader:
         self.cash = Config.STARTING_CAPITAL
         self.position = None
         self.trades = []
+        self.queued_signal = None
+        self.last_processed_time = None
         self.save_state()
         logger.info(f"Paper trading account for {self.symbol} has been reset.")
