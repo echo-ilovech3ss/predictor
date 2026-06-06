@@ -66,4 +66,18 @@ def calculate_indicators(df: pd.DataFrame) -> pd.DataFrame:
     # 8. Rolling Volatility (20-period)
     data['volatility_20'] = data['returns'].rolling(window=20).std()
     
+    # 9. ROC (Rate of Change) - 12-period
+    data['roc_12'] = data['close'].pct_change(periods=12).fillna(0)
+    
+    # 10. Stochastic Oscillator (14, 3)
+    lowest_low = data['low'].rolling(window=14).min()
+    highest_high = data['high'].rolling(window=14).max()
+    high_low_range = highest_high - lowest_low
+    high_low_range = np.where(high_low_range == 0, 1.0, high_low_range)
+    
+    data['stoch_k'] = ((data['close'] - lowest_low) / high_low_range) * 100.0
+    data['stoch_d'] = data['stoch_k'].rolling(window=3).mean()
+    data['stoch_k'] = data['stoch_k'].fillna(50.0)
+    data['stoch_d'] = data['stoch_d'].fillna(50.0)
+    
     return data

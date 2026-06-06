@@ -71,6 +71,11 @@ def extract_features(df: pd.DataFrame) -> pd.DataFrame:
     if 'spy_returns' in data.columns:
         features['spy_returns_lag'] = data['spy_returns']
         features['spy_close_dist'] = (data['close'] - data['spy_close']) / data['spy_close']
+        
+    # 12. Momentum & Oscillator Features
+    features['roc_12'] = data['roc_12']
+    features['stoch_k'] = data['stoch_k']
+    features['stoch_d'] = data['stoch_d']
     
     # Clean any inf or -inf values that could occur from divisions or percentage changes
     features = features.replace([np.inf, -np.inf], np.nan).fillna(0)
