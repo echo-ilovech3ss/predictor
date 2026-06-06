@@ -72,13 +72,8 @@ class MarketMLModel:
         self.model.fit(X_cal_scaled, y_cal)
         
         # 6. Evaluate on Test set
+        y_pred = self.model.predict(X_test_scaled)
         y_pred_proba = self.model.predict_proba(X_test_scaled)[:, 1]
-        
-        # Use the training set base rate as the decision threshold for evaluation metrics
-        # to align the classification boundary with the target distribution.
-        base_rate = y_train.mean()
-        logger.info(f"Using prior-adjusted decision threshold: {base_rate:.4f} for evaluation.")
-        y_pred = (y_pred_proba >= base_rate).astype(int)
         
         acc = accuracy_score(y_test, y_pred)
         prec = precision_score(y_test, y_pred, zero_division=0)
