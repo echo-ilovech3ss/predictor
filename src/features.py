@@ -63,6 +63,15 @@ def extract_features(df: pd.DataFrame) -> pd.DataFrame:
     features['candle_upper_shadow'] = (data['high'] - data[['open', 'close']].max(axis=1)) / safe_atr
     features['candle_lower_shadow'] = (data[['open', 'close']].min(axis=1) - data['low']) / safe_atr
     
+    # 10. Intraday Session Seasonality
+    features['hour_of_day'] = data.index.hour
+    features['day_of_week'] = data.index.dayofweek
+    
+    # 11. Cross-Market Features (only present if NIFTY has loaded aligned SPY features)
+    if 'spy_returns' in data.columns:
+        features['spy_returns_lag'] = data['spy_returns']
+        features['spy_close_dist'] = (data['close'] - data['spy_close']) / data['spy_close']
+    
     # Clean any inf or -inf values that could occur from divisions or percentage changes
     features = features.replace([np.inf, -np.inf], np.nan).fillna(0)
     

@@ -139,6 +139,39 @@ class YFinanceProvider(BaseDataProvider):
         # Drop rows with NaN close prices
         filtered_df = filtered_df.dropna(subset=["close"])
         
+        # Check if we need to merge cross-market features (NIFTY only)
+        if config_key == "NIFTY":
+            try:
+                logger.info("NIFTY symbol detected: Merging overnight SPY cross-market features...")
+                # Fetch SPY data recursively using UTC zone alignment (start 2 days earlier to avoid start boundary NaNs)
+                spy_df = self.fetch_data("SPY", start - datetime.timedelta(days=2), end)
+                if not spy_df.empty:
+                    # Calculate SPY returns
+                    spy_df['spy_returns'] = spy_df['close'].pct_change().fillna(0)
+                    spy_df = spy_df.rename(columns={'close': 'spy_close'})
+                    
+                    # Align timezones via UTC
+                    nifty_utc = filtered_df.tz_convert(pytz.UTC)
+                    spy_utc = spy_df.tz_convert(pytz.UTC)
+                    
+                    # Merge based on matching previous SPY candle
+                    merged_utc = pd.merge_asof(
+                        nifty_utc, 
+                        spy_utc[['spy_close', 'spy_returns']], 
+                        left_index=True, 
+                        right_index=True, 
+                        direction='backward'
+                    )
+                    
+                    # Convert back to NIFTY standard timezone
+                    filtered_df = merged_utc.tz_convert(tz)
+                    # Forward-fill any NaN values and fill remaining with 0
+                    filtered_df['spy_close'] = filtered_df['spy_close'].ffill().fillna(0)
+                    filtered_df['spy_returns'] = filtered_df['spy_returns'].ffill().fillna(0)
+                    logger.info("Successfully merged SPY cross-market features with NIFTY.")
+            except Exception as e:
+                logger.error(f"Failed to merge cross-market SPY features: {e}")
+        
         # Validate data recency
         self.validate_recency(filtered_df, symbol)
         
