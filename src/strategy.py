@@ -37,7 +37,7 @@ class Strategy:
         # - Price is above EMA 50 (bullish filter)
         # - RSI is not overbought (< 70)
         if prob_up >= self.min_confidence:
-            if market_state in ["bullish", "sideways"] and close > ema_50 and rsi < 70:
+            if market_state == "bullish" and close > ema_50 and rsi < 70:
                 action = "BUY"
                 explanation = (
                     f"BUY recommended because: trend is {market_state}, "
@@ -49,8 +49,8 @@ class Strategy:
                 # ML was bullish, but filter failed
                 action = "HOLD"
                 failed_filters = []
-                if market_state not in ["bullish", "sideways"]:
-                    failed_filters.append(f"market state is {market_state}")
+                if market_state != "bullish":
+                    failed_filters.append(f"market state is {market_state} (must be bullish)")
                 if close <= ema_50:
                     failed_filters.append(f"price ({close:.2f}) is below EMA 50 ({ema_50:.2f})")
                 if rsi >= 70:

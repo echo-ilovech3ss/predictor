@@ -48,11 +48,10 @@ class MarketMLModel:
         X_test_scaled = self.scaler.transform(X_test)
         
         # 4. Train base model on X_fit using XGBClassifier
-        # Compute dynamic scale_pos_weight to balance positive classes and reduce False Negatives (missed trades)
-        num_neg = np.sum(y_fit == 0)
-        num_pos = np.sum(y_fit == 1)
-        scale_pos_weight = num_neg / num_pos if num_pos > 0 else 1.0
-        logger.info(f"Training subset class balance: Negative={num_neg}, Positive={num_pos}. Using scale_pos_weight={scale_pos_weight:.2f}")
+        # Prioritize reducing False Positives (bad trades) and maximizing Precision.
+        # Setting scale_pos_weight to 0.70 actively penalizes false positive errors during training.
+        scale_pos_weight = 0.70
+        logger.info(f"Prioritizing high precision. Using scale_pos_weight={scale_pos_weight:.2f}")
         
         base_clf = XGBClassifier(
             n_estimators=120,
