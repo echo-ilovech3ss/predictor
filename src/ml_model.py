@@ -49,8 +49,9 @@ class MarketMLModel:
         
         # 4. Train base model on X_fit using XGBClassifier
         # Prioritize reducing False Positives (bad trades) and maximizing Precision.
-        # Setting scale_pos_weight to 0.70 actively penalizes false positive errors during training.
-        scale_pos_weight = 0.70
+        # Setting scale_pos_weight to 0.50 tells the model that a False Positive (bad trade) 
+        # is twice as costly as a False Negative (missed trade).
+        scale_pos_weight = 0.50
         logger.info(f"Prioritizing high precision. Using scale_pos_weight={scale_pos_weight:.2f}")
         
         # Add L1/L2 regularization and row/feature subsampling to prevent memorization (overfitting).
