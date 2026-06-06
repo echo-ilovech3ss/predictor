@@ -58,8 +58,8 @@ def test_feature_no_future_leakage():
 
 def test_label_generation_uses_future():
     """
-    Test that target labels at index t correctly represent whether index t+1 closes higher.
-    Mutating close(t+1) MUST change target(t).
+    Test that target labels at index t correctly represent whether index t+4 closes at least 0.05% higher.
+    Mutating close(t+4) MUST change target(t).
     """
     df = create_dummy_ohlcv(250)
     df_with_ind = calculate_indicators(df)
@@ -69,11 +69,11 @@ def test_label_generation_uses_future():
     # Find a row where index is within X
     test_idx = 210
     test_timestamp = X.index[test_idx]
-    next_timestamp = X.index[test_idx + 1]
+    future_timestamp = X.index[test_idx + 4]
     
     # Verify label matches direction
     close_now = df_with_ind.loc[test_timestamp, 'close']
-    close_next = df_with_ind.loc[next_timestamp, 'close']
-    expected_label = 1 if close_next > close_now else 0
+    close_future = df_with_ind.loc[future_timestamp, 'close']
+    expected_label = 1 if close_future > close_now * 1.0005 else 0
     
     assert y.loc[test_timestamp] == expected_label

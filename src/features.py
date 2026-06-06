@@ -80,22 +80,20 @@ def extract_features(df: pd.DataFrame) -> pd.DataFrame:
 def prepare_data_for_training(df: pd.DataFrame):
     """
     Generate features and labels for training.
-    Label at index t is: 1 if Close(t+1) > Close(t), else 0.
+    Label at index t is: 1 if Close(t+4) > Close(t) * 1.0005 (rises >= 0.05% over next 4 hours), else 0.
     Drops rows with missing features or target.
     """
     # Extract features
     features_df = extract_features(df)
     
-    # Target label: Close(t+1) > Close(t)
-    # shifted by -1 so that features[t] maps to close[t+1] > close[t]
-    target = (df['close'].shift(-1) > df['close']).astype(int)
+    # Target label: Close(t+4) > Close(t) * 1.0005 (4-hour forward lookahead, 0.05% threshold)
+    target = (df['close'].shift(-4) > df['close'] * 1.0005).astype(int)
     
     # Merge features and target
     dataset = features_df.copy()
     dataset['target'] = target
     
-    # Drop rows with NaN (first 200 rows due to EMA200, and last row due to target shift)
-    # We must not drop intermediate rows if they have NaNs, unless they are invalid.
+    # Drop rows with NaN (first 200 rows due to EMA200, and last 4 rows due to target shift)
     cleaned_dataset = dataset.dropna()
     
     X = cleaned_dataset.drop(columns=['target'])
