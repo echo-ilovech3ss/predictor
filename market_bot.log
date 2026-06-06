@@ -1446,3 +1446,184 @@ NameError: name 'np' is not defined
 [2026-06-06 18:26:31] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
 [2026-06-06 18:26:31] INFO [market_bot.can_open_position:47] Cannot open new position: Daily loss limit is breached.
 [2026-06-06 18:26:31] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 18:41:13] INFO [market_bot.run_diagnostics:501] --- RUNNING MODEL DIAGNOSTICS FOR SPY ---
+[2026-06-06 18:41:13] INFO [market_bot.run_walk_forward:270] --- WALK-FORWARD VALIDATION FOR SPY ---
+[2026-06-06 18:41:13] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 18:41:13.753289-04:00 to 2026-06-06 18:41:13.753295-04:00
+[2026-06-06 18:41:13] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 18:41:13] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 18:41:13.753295-04:00...
+[2026-06-06 18:41:14] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 18:41:14] INFO [market_bot.run_walk_forward:311] Walk 1: Training from 2024-06-10 to 2025-06-10, Testing from 2025-06-10 to 2025-08-08
+[2026-06-06 18:41:14] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (1739, 30), y shape (1739,)
+[2026-06-06 18:41:15] INFO [market_bot.run_walk_forward:311] Walk 2: Training from 2024-06-10 to 2025-08-08, Testing from 2025-08-11 to 2025-10-08
+[2026-06-06 18:41:15] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2028, 30), y shape (2028,)
+[2026-06-06 18:41:16] INFO [market_bot.run_walk_forward:311] Walk 3: Training from 2024-06-10 to 2025-10-08, Testing from 2025-10-08 to 2025-12-05
+[2026-06-06 18:41:16] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2316, 30), y shape (2316,)
+[2026-06-06 18:41:17] INFO [market_bot.run_walk_forward:311] Walk 4: Training from 2024-06-10 to 2025-12-05, Testing from 2025-12-08 to 2026-02-04
+[2026-06-06 18:41:17] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2605, 30), y shape (2605,)
+[2026-06-06 18:41:17] INFO [market_bot.run_walk_forward:311] Walk 5: Training from 2024-06-10 to 2026-02-04, Testing from 2026-02-05 to 2026-04-06
+[2026-06-06 18:41:17] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2871, 30), y shape (2871,)
+[2026-06-06 18:41:18] INFO [market_bot.run_walk_forward:311] Walk 6: Training from 2024-06-10 to 2026-04-06, Testing from 2026-04-06 to 2026-06-05
+[2026-06-06 18:41:18] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3152, 30), y shape (3152,)
+[2026-06-06 18:41:19] INFO [market_bot.run_walk_forward:423] Running ML-guided Walk-Forward backtest starting at 2025-06-10...
+[2026-06-06 18:41:19] INFO [market_bot.run_backtest:30] Starting backtest for SPY (US market) on 1914 candles...
+[2026-06-06 18:41:19] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:30:00-04:00. Initial OOS Equity: 100000.00
+[2026-06-06 18:41:19] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 98723.22, Trades: 6, Win Rate: 33.33%, Max Drawdown: -1.89%
+[2026-06-06 18:41:19] INFO [market_bot.run_walk_forward:446] Running Rule-only baseline backtest...
+[2026-06-06 18:41:19] INFO [market_bot.run_backtest:30] Starting backtest for SPY (US market) on 1914 candles...
+[2026-06-06 18:41:19] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:30:00-04:00. Initial OOS Equity: 100000.00
+[2026-06-06 18:41:19] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 101865.65, Trades: 8, Win Rate: 50.00%, Max Drawdown: -1.77%
+[2026-06-06 18:41:19] INFO [market_bot.run_backtest:30] Starting backtest for ASSET (US market) on 1914 candles...
+[2026-06-06 18:41:19] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:30:00-04:00. Initial OOS Equity: 100000.00
+[2026-06-06 18:41:20] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 99316.18, Trades: 28, Win Rate: 57.14%, Max Drawdown: -1.81%
+[2026-06-06 18:41:20] INFO [market_bot.run_backtest:30] Starting backtest for ASSET (US market) on 1914 candles...
+[2026-06-06 18:41:20] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:30:00-04:00. Initial OOS Equity: 100000.00
+[2026-06-06 18:41:20] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 98876.21, Trades: 12, Win Rate: 50.00%, Max Drawdown: -1.87%
+[2026-06-06 18:41:20] INFO [market_bot.run_backtest:30] Starting backtest for ASSET (US market) on 1914 candles...
+[2026-06-06 18:41:20] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:30:00-04:00. Initial OOS Equity: 100000.00
+[2026-06-06 18:41:20] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 98786.93, Trades: 9, Win Rate: 44.44%, Max Drawdown: -2.01%
+[2026-06-06 18:41:20] INFO [market_bot.run_backtest:30] Starting backtest for ASSET (US market) on 1914 candles...
+[2026-06-06 18:41:20] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:30:00-04:00. Initial OOS Equity: 100000.00
+[2026-06-06 18:41:20] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 99283.82, Trades: 7, Win Rate: 57.14%, Max Drawdown: -1.60%
+[2026-06-06 18:41:20] INFO [market_bot.run_backtest:30] Starting backtest for ASSET (US market) on 1914 candles...
+[2026-06-06 18:41:20] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:30:00-04:00. Initial OOS Equity: 100000.00
+[2026-06-06 18:41:20] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 99358.02, Trades: 3, Win Rate: 33.33%, Max Drawdown: -1.05%
+[2026-06-06 18:47:39] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (250, 30), y shape (250,)
+[2026-06-06 18:47:39] INFO [market_bot.run_backtest:30] Starting backtest for SPY (US market) on 205 candles...
+[2026-06-06 18:47:39] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 99015.82, Trades: 1, Win Rate: 0.00%, Max Drawdown: -1.16%
+[2026-06-06 18:47:39] INFO [market_bot.load_state:36] Initialized new paper trader state for TEST_MOCK_SYMBOL at test_mock_symbol_paper_trader_state.json
+[2026-06-06 18:47:39] INFO [market_bot.reset_account:235] Paper trading account for TEST_MOCK_SYMBOL has been reset.
+[2026-06-06 18:47:39] WARNING [market_bot.process_signal:94] Paper trading execution blocked: Market is closed or data is stale. Forcing HOLD.
+[2026-06-06 18:47:39] WARNING [market_bot.process_signal:94] Paper trading execution blocked: Market is closed or data is stale. Forcing HOLD.
+[2026-06-06 18:47:41] INFO [market_bot.train:31] Starting model training for TEST_MOCK...
+[2026-06-06 18:47:41] INFO [market_bot.train:50] Running 5-fold TimeSeriesSplit cross-validation on training set to tune decision threshold...
+[2026-06-06 18:47:41] INFO [market_bot.train:98] TimeSeriesSplit Threshold Tuning completed. Optimal Threshold: 0.500 (Validation Precision: 1.0000)
+[2026-06-06 18:47:41] INFO [market_bot.train:101] Training final model on full training set...
+[2026-06-06 18:47:41] INFO [market_bot.train:127] --- Model Evaluation for TEST_MOCK ---
+[2026-06-06 18:47:41] INFO [market_bot.train:128] Test Accuracy (optimal threshold 0.500):  0.5000
+[2026-06-06 18:47:41] INFO [market_bot.train:129] Test Precision (optimal threshold 0.500): 0.5000
+[2026-06-06 18:47:41] INFO [market_bot.train:130] Test Recall (optimal threshold 0.500):    1.0000
+[2026-06-06 18:47:41] INFO [market_bot.train:131] Confusion Matrix:
+[[0 5]
+ [0 5]]
+[2026-06-06 18:47:41] INFO [market_bot.train:132] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 18:47:41] INFO [market_bot.save:163] Model successfully saved to models/TEST_MOCK_model.joblib
+[2026-06-06 18:47:41] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 98.00, Trigger Price: 98.00
+[2026-06-06 18:47:41] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 97.90, Trigger Price: 98.00
+[2026-06-06 18:47:41] INFO [market_bot.can_open_position:42] Trade limit reached for today: 3 trades executed. Max limit is 3.
+[2026-06-06 18:47:41] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 18:47:41] INFO [market_bot.can_open_position:47] Cannot open new position: Daily loss limit is breached.
+[2026-06-06 18:47:41] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 18:47:51] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (250, 30), y shape (250,)
+[2026-06-06 18:47:52] INFO [market_bot.run_backtest:30] Starting backtest for SPY (US market) on 205 candles...
+[2026-06-06 18:47:52] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 99015.82, Trades: 1, Win Rate: 0.00%, Max Drawdown: -1.16%
+[2026-06-06 18:47:52] INFO [market_bot.load_state:36] Initialized new paper trader state for TEST_MOCK_SYMBOL at test_mock_symbol_paper_trader_state.json
+[2026-06-06 18:47:52] INFO [market_bot.reset_account:235] Paper trading account for TEST_MOCK_SYMBOL has been reset.
+[2026-06-06 18:47:52] WARNING [market_bot.process_signal:94] Paper trading execution blocked: Market is closed or data is stale. Forcing HOLD.
+[2026-06-06 18:47:52] WARNING [market_bot.process_signal:94] Paper trading execution blocked: Market is closed or data is stale. Forcing HOLD.
+[2026-06-06 18:47:53] INFO [market_bot.train:31] Starting model training for TEST_MOCK...
+[2026-06-06 18:47:53] INFO [market_bot.train:50] Running 5-fold TimeSeriesSplit cross-validation on training set to tune decision threshold...
+[2026-06-06 18:47:53] INFO [market_bot.train:98] TimeSeriesSplit Threshold Tuning completed. Optimal Threshold: 0.500 (Validation Precision: 1.0000)
+[2026-06-06 18:47:53] INFO [market_bot.train:101] Training final model on full training set...
+[2026-06-06 18:47:53] INFO [market_bot.train:127] --- Model Evaluation for TEST_MOCK ---
+[2026-06-06 18:47:53] INFO [market_bot.train:128] Test Accuracy (optimal threshold 0.500):  0.5000
+[2026-06-06 18:47:53] INFO [market_bot.train:129] Test Precision (optimal threshold 0.500): 0.5000
+[2026-06-06 18:47:53] INFO [market_bot.train:130] Test Recall (optimal threshold 0.500):    1.0000
+[2026-06-06 18:47:53] INFO [market_bot.train:131] Confusion Matrix:
+[[0 5]
+ [0 5]]
+[2026-06-06 18:47:53] INFO [market_bot.train:132] CRITICAL NOTE: Accuracy is just one piece of the puzzle. Predictive accuracy in trading does not guarantee profitability. A model with 52% accuracy but a strong risk-reward ratio can be highly profitable, while a 60% accurate model with poor risk management can lose capital rapidly.
+[2026-06-06 18:47:53] INFO [market_bot.save:163] Model successfully saved to models/TEST_MOCK_model.joblib
+[2026-06-06 18:47:53] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 98.00, Trigger Price: 98.00
+[2026-06-06 18:47:53] WARNING [market_bot.is_stop_loss_triggered:74] Stop loss triggered! Entry: 100.00, Current: 97.90, Trigger Price: 98.00
+[2026-06-06 18:47:53] INFO [market_bot.can_open_position:42] Trade limit reached for today: 3 trades executed. Max limit is 3.
+[2026-06-06 18:47:53] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 18:47:53] INFO [market_bot.can_open_position:47] Cannot open new position: Daily loss limit is breached.
+[2026-06-06 18:47:53] WARNING [market_bot.check_daily_loss_limit:28] Daily loss limit breached: -6.00% (Limit: 5.00%)
+[2026-06-06 18:47:57] INFO [market_bot.run_diagnostics:501] --- RUNNING MODEL DIAGNOSTICS FOR SPY ---
+[2026-06-06 18:47:57] INFO [market_bot.run_walk_forward:270] --- WALK-FORWARD VALIDATION FOR SPY ---
+[2026-06-06 18:47:57] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-07 18:47:57.581167-04:00 to 2026-06-06 18:47:57.581173-04:00
+[2026-06-06 18:47:57] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 18:47:57] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 18:47:57.581173-04:00...
+[2026-06-06 18:47:58] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 18:47:58] INFO [market_bot.run_walk_forward:311] Walk 1: Training from 2024-06-10 to 2025-06-10, Testing from 2025-06-10 to 2025-08-08
+[2026-06-06 18:47:58] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (1739, 30), y shape (1739,)
+[2026-06-06 18:47:59] INFO [market_bot.run_walk_forward:311] Walk 2: Training from 2024-06-10 to 2025-08-08, Testing from 2025-08-11 to 2025-10-08
+[2026-06-06 18:47:59] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2028, 30), y shape (2028,)
+[2026-06-06 18:47:59] INFO [market_bot.run_walk_forward:311] Walk 3: Training from 2024-06-10 to 2025-10-08, Testing from 2025-10-08 to 2025-12-05
+[2026-06-06 18:47:59] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2316, 30), y shape (2316,)
+[2026-06-06 18:48:00] INFO [market_bot.run_walk_forward:311] Walk 4: Training from 2024-06-10 to 2025-12-05, Testing from 2025-12-08 to 2026-02-04
+[2026-06-06 18:48:00] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2605, 30), y shape (2605,)
+[2026-06-06 18:48:00] INFO [market_bot.run_walk_forward:311] Walk 5: Training from 2024-06-10 to 2026-02-04, Testing from 2026-02-05 to 2026-04-06
+[2026-06-06 18:48:00] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2871, 30), y shape (2871,)
+[2026-06-06 18:48:01] INFO [market_bot.run_walk_forward:311] Walk 6: Training from 2024-06-10 to 2026-04-06, Testing from 2026-04-06 to 2026-06-05
+[2026-06-06 18:48:01] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3152, 30), y shape (3152,)
+[2026-06-06 18:48:02] INFO [market_bot.run_walk_forward:423] Running ML-guided Walk-Forward backtest starting at 2025-06-10...
+[2026-06-06 18:48:02] INFO [market_bot.run_backtest:30] Starting backtest for SPY (US market) on 1914 candles...
+[2026-06-06 18:48:02] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:30:00-04:00. Initial OOS Equity: 100000.00
+[2026-06-06 18:48:02] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 98723.22, Trades: 6, Win Rate: 33.33%, Max Drawdown: -1.89%
+[2026-06-06 18:48:02] INFO [market_bot.run_walk_forward:446] Running Rule-only baseline backtest...
+[2026-06-06 18:48:02] INFO [market_bot.run_backtest:30] Starting backtest for SPY (US market) on 1914 candles...
+[2026-06-06 18:48:02] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:30:00-04:00. Initial OOS Equity: 100000.00
+[2026-06-06 18:48:02] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 101865.65, Trades: 8, Win Rate: 50.00%, Max Drawdown: -1.77%
+[2026-06-06 18:48:02] INFO [market_bot.run_backtest:30] Starting backtest for SPY (US market) on 1914 candles...
+[2026-06-06 18:48:02] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:30:00-04:00. Initial OOS Equity: 100000.00
+[2026-06-06 18:48:02] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 99316.18, Trades: 28, Win Rate: 57.14%, Max Drawdown: -1.81%
+[2026-06-06 18:48:02] INFO [market_bot.run_backtest:30] Starting backtest for SPY (US market) on 1914 candles...
+[2026-06-06 18:48:02] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:30:00-04:00. Initial OOS Equity: 100000.00
+[2026-06-06 18:48:02] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 98876.21, Trades: 12, Win Rate: 50.00%, Max Drawdown: -1.87%
+[2026-06-06 18:48:02] INFO [market_bot.run_backtest:30] Starting backtest for SPY (US market) on 1914 candles...
+[2026-06-06 18:48:02] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:30:00-04:00. Initial OOS Equity: 100000.00
+[2026-06-06 18:48:03] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 98786.93, Trades: 9, Win Rate: 44.44%, Max Drawdown: -2.01%
+[2026-06-06 18:48:03] INFO [market_bot.run_backtest:30] Starting backtest for SPY (US market) on 1914 candles...
+[2026-06-06 18:48:03] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:30:00-04:00. Initial OOS Equity: 100000.00
+[2026-06-06 18:48:03] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 99283.82, Trades: 7, Win Rate: 57.14%, Max Drawdown: -1.60%
+[2026-06-06 18:48:03] INFO [market_bot.run_backtest:30] Starting backtest for SPY (US market) on 1914 candles...
+[2026-06-06 18:48:03] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:30:00-04:00. Initial OOS Equity: 100000.00
+[2026-06-06 18:48:03] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 99358.02, Trades: 3, Win Rate: 33.33%, Max Drawdown: -1.05%
+[2026-06-06 18:48:08] INFO [market_bot.run_diagnostics:501] --- RUNNING MODEL DIAGNOSTICS FOR NIFTY ---
+[2026-06-06 18:48:08] INFO [market_bot.run_walk_forward:270] --- WALK-FORWARD VALIDATION FOR NIFTY ---
+[2026-06-06 18:48:08] INFO [market_bot.fetch_data:78] Requested data for NIFTY (^NSEI) from 2024-06-07 18:48:08.531634+05:30 to 2026-06-06 18:48:08.531638+05:30
+[2026-06-06 18:48:08] INFO [market_bot.fetch_data:88] Loaded 3419 rows of cached data for NIFTY.
+[2026-06-06 18:48:08] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:15:00+05:30 to 2026-06-06 18:48:08.531638+05:30...
+[2026-06-06 18:48:09] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3419.
+[2026-06-06 18:48:09] INFO [market_bot.fetch_data:145] NIFTY symbol detected: Merging overnight SPY cross-market features...
+[2026-06-06 18:48:09] INFO [market_bot.fetch_data:78] Requested data for SPY (SPY) from 2024-06-05 18:48:08.531634+05:30 to 2026-06-06 18:48:08.531638+05:30
+[2026-06-06 18:48:09] INFO [market_bot.fetch_data:88] Loaded 3459 rows of cached data for SPY.
+[2026-06-06 18:48:09] INFO [market_bot.fetch_data:98] Cache is stale. Fetching updates from 2026-06-05 13:30:00-04:00 to 2026-06-06 18:48:08.531638+05:30...
+[2026-06-06 18:48:09] INFO [market_bot.fetch_data:110] Cache updated and saved. Total rows: 3459.
+[2026-06-06 18:48:09] INFO [market_bot.fetch_data:171] Successfully merged SPY cross-market features with NIFTY.
+[2026-06-06 18:48:09] INFO [market_bot.run_walk_forward:311] Walk 1: Training from 2024-06-10 to 2025-06-10, Testing from 2025-06-10 to 2025-08-08
+[2026-06-06 18:48:09] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (1730, 32), y shape (1730,)
+[2026-06-06 18:48:10] INFO [market_bot.run_walk_forward:311] Walk 2: Training from 2024-06-10 to 2025-08-08, Testing from 2025-08-11 to 2025-10-08
+[2026-06-06 18:48:10] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2037, 32), y shape (2037,)
+[2026-06-06 18:48:10] INFO [market_bot.run_walk_forward:311] Walk 3: Training from 2024-06-10 to 2025-10-08, Testing from 2025-10-08 to 2025-12-05
+[2026-06-06 18:48:10] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2311, 32), y shape (2311,)
+[2026-06-06 18:48:11] INFO [market_bot.run_walk_forward:311] Walk 4: Training from 2024-06-10 to 2025-12-05, Testing from 2025-12-08 to 2026-02-05
+[2026-06-06 18:48:11] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2592, 32), y shape (2592,)
+[2026-06-06 18:48:12] INFO [market_bot.run_walk_forward:311] Walk 5: Training from 2024-06-10 to 2026-02-05, Testing from 2026-02-05 to 2026-04-06
+[2026-06-06 18:48:12] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (2865, 32), y shape (2865,)
+[2026-06-06 18:48:12] INFO [market_bot.run_walk_forward:311] Walk 6: Training from 2024-06-10 to 2026-04-06, Testing from 2026-04-06 to 2026-06-05
+[2026-06-06 18:48:12] INFO [market_bot.prepare_data_for_training:107] Prepared training dataset: X shape (3131, 32), y shape (3131,)
+[2026-06-06 18:48:13] INFO [market_bot.run_walk_forward:423] Running ML-guided Walk-Forward backtest starting at 2025-06-10...
+[2026-06-06 18:48:13] INFO [market_bot.run_backtest:30] Starting backtest for NIFTY (INDIA market) on 1883 candles...
+[2026-06-06 18:48:13] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:15:00+05:30. Initial OOS Equity: 100000.00
+[2026-06-06 18:48:13] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 99886.70, Trades: 2, Win Rate: 0.00%, Max Drawdown: -0.14%
+[2026-06-06 18:48:13] INFO [market_bot.run_walk_forward:446] Running Rule-only baseline backtest...
+[2026-06-06 18:48:13] INFO [market_bot.run_backtest:30] Starting backtest for NIFTY (INDIA market) on 1883 candles...
+[2026-06-06 18:48:13] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:15:00+05:30. Initial OOS Equity: 100000.00
+[2026-06-06 18:48:13] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 97600.99, Trades: 10, Win Rate: 30.00%, Max Drawdown: -2.42%
+[2026-06-06 18:48:14] INFO [market_bot.run_backtest:30] Starting backtest for NIFTY (INDIA market) on 1883 candles...
+[2026-06-06 18:48:14] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:15:00+05:30. Initial OOS Equity: 100000.00
+[2026-06-06 18:48:14] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 99257.73, Trades: 8, Win Rate: 12.50%, Max Drawdown: -0.81%
+[2026-06-06 18:48:14] INFO [market_bot.run_backtest:30] Starting backtest for NIFTY (INDIA market) on 1883 candles...
+[2026-06-06 18:48:14] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:15:00+05:30. Initial OOS Equity: 100000.00
+[2026-06-06 18:48:14] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 99720.87, Trades: 2, Win Rate: 0.00%, Max Drawdown: -0.30%
+[2026-06-06 18:48:14] INFO [market_bot.run_backtest:30] Starting backtest for NIFTY (INDIA market) on 1883 candles...
+[2026-06-06 18:48:14] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:15:00+05:30. Initial OOS Equity: 100000.00
+[2026-06-06 18:48:14] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 100000.00, Trades: 0, Win Rate: 0.00%, Max Drawdown: 0.00%
+[2026-06-06 18:48:14] INFO [market_bot.run_backtest:30] Starting backtest for NIFTY (INDIA market) on 1883 candles...
+[2026-06-06 18:48:14] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:15:00+05:30. Initial OOS Equity: 100000.00
+[2026-06-06 18:48:14] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 100000.00, Trades: 0, Win Rate: 0.00%, Max Drawdown: 0.00%
+[2026-06-06 18:48:14] INFO [market_bot.run_backtest:30] Starting backtest for NIFTY (INDIA market) on 1883 candles...
+[2026-06-06 18:48:14] INFO [market_bot.run_backtest:110] OOS period started at 2025-06-10 10:15:00+05:30. Initial OOS Equity: 100000.00
+[2026-06-06 18:48:14] INFO [market_bot.run_backtest:416] Backtest completed. Final Capital: 100000.00, Trades: 0, Win Rate: 0.00%, Max Drawdown: 0.00%

@@ -20,8 +20,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Paper-Trading Market Prediction Bot CLI")
     parser.add_argument(
         "action",
-        choices=["train", "backtest", "predict", "walk-forward"],
-        help="Action to perform: 'train' model, run 'backtest' historically, 'predict' the next state, or run 'walk-forward' validation."
+        choices=["train", "backtest", "predict", "walk-forward", "diagnostics"],
+        help="Action to perform: 'train' model, run 'backtest' historically, 'predict' the next state, run 'walk-forward' validation, or generate 'diagnostics' report."
     )
     parser.add_argument(
         "--symbol",
@@ -294,6 +294,8 @@ def run_walk_forward(symbol: str):
     oos_index = []
     
     walk_idx = 1
+    wf_feature_importances = []
+    feature_names = []
     while train_end + test_duration <= end_date:
         test_end = train_end + test_duration
         
@@ -373,6 +375,8 @@ def run_walk_forward(symbol: str):
                 random_state=42, n_jobs=-1, eval_metric='logloss'
             )
             clf.fit(X_train_scaled, y_train)
+            if hasattr(clf, "feature_importances_"):
+                wf_feature_importances.append(clf.feature_importances_)
             
             # Predict only on X_test (next OOS window)
             probas = clf.predict_proba(X_test_scaled)
@@ -424,6 +428,19 @@ def run_walk_forward(symbol: str):
         pred_prob_down=pred_prob_down,
         dynamic_thresholds=dynamic_thresholds
     )
+    
+    # Calculate average feature importances across walk-forward folds
+    if wf_feature_importances and feature_names:
+        avg_importances = np.mean(wf_feature_importances, axis=0)
+        feature_importances_dict = dict(zip(feature_names, avg_importances))
+    else:
+        feature_importances_dict = {}
+        
+    ml_results['df'] = df
+    ml_results['pred_prob_up'] = pred_prob_up
+    ml_results['pred_prob_down'] = pred_prob_down
+    ml_results['feature_importances'] = feature_importances_dict
+    ml_results['feature_names'] = feature_names
     
     # Rule-only baseline backtest
     logger.info("Running Rule-only baseline backtest...")
@@ -477,6 +494,20 @@ def main():
         run_predict(args.symbol)
     elif args.action == "walk-forward":
         run_walk_forward(args.symbol)
+    elif args.action == "diagnostics":
+        run_diagnostics(args.symbol)
+
+def run_diagnostics(symbol: str):
+    logger.info(f"--- RUNNING MODEL DIAGNOSTICS FOR {symbol} ---")
+    ml_results, rule_results = run_walk_forward(symbol)
+    if ml_results is None or rule_results is None:
+        logger.error("Diagnostics aborted: Walk-forward validation failed.")
+        return
+        
+    from src.diagnostics import ModelDiagnostics
+    diag = ModelDiagnostics(ml_results, rule_results, symbol)
+    report = diag.generate_markdown_report()
+    print(report)
 
 if __name__ == "__main__":
     main()

@@ -124,6 +124,12 @@ def fetch_recent_data(symbol: str):
         logger.error(f"Error fetching data: {e}")
         return None
 
+# Helper function to cache walk-forward simulation
+@st.cache_data(show_spinner="Running Walk-Forward Simulation (expensive, will be cached)...")
+def get_cached_walk_forward(symbol: str):
+    return run_walk_forward(symbol)
+
+
 # App Layout
 st.markdown("<div class='main-title'>AlphaPredict Bot</div>", unsafe_allowed_html=True)
 st.markdown("<div class='sub-title'>Modular ML-guided Market Prediction & Cautious Paper Trading</div>", unsafe_allowed_html=True)
@@ -875,3 +881,300 @@ if run_wf_btn:
         except Exception as e:
             st.error(f"Walk-Forward validation error: {e}")
             logger.error(f"Walk-Forward validation error: {e}", exc_info=True)
+
+# Row 6: Model Diagnostics Report
+st.markdown("---")
+st.markdown("### 🔍 Walk-Forward Model Diagnostics Report")
+st.write("Analyze Out-of-Sample (OOS) walk-forward predictions to understand predictive capability, Brier calibration, sensitivity to thresholds, feature importances, trade MAE/MFE excursions, and regime exposures.")
+
+run_diag_btn = st.button("Generate Model Diagnostics Report (Walk-Forward OOS)", type="primary", key="run_diag_report")
+
+if run_diag_btn:
+    with st.spinner("Analyzing walk-forward OOS predictions..."):
+        try:
+            # 1. Fetch walk-forward OOS results (cached)
+            ml_results, rule_results = get_cached_walk_forward(symbol_selection)
+            
+            if ml_results is None or rule_results is None:
+                st.error("Walk-forward simulation returned empty results.")
+            else:
+                from src.diagnostics import ModelDiagnostics
+                diag = ModelDiagnostics(ml_results, rule_results, symbol_selection)
+                
+                # Compute metrics
+                metrics = diag.get_oos_classification_metrics()
+                dist = diag.get_probability_distribution()
+                sensitivity = diag.get_threshold_sensitivity()
+                importances = diag.get_feature_importances()
+                trade_diag = diag.get_trade_diagnostics()
+                regimes = diag.get_regime_analysis()
+                rallies = diag.get_missed_rallies()
+                
+                # Show KPIs
+                st.success("Diagnostics report generated successfully!")
+                
+                # Section 1: Classification Performance
+                st.markdown("#### 1. OOS Classification Performance Metrics")
+                
+                kpi_col1, kpi_col2, kpi_col3 = st.columns(3)
+                
+                acc = metrics['accuracy']
+                acc_str = f"{acc * 100:.2f}%" if isinstance(acc, float) else str(acc)
+                kpi_col1.metric("Accuracy (threshold 0.60)", acc_str)
+                
+                prec = metrics['precision']
+                prec_str = f"{prec * 100:.2f}%" if isinstance(prec, float) else str(prec)
+                kpi_col2.metric("Precision (threshold 0.60)", prec_str)
+                
+                rec = metrics['recall']
+                rec_str = f"{rec * 100:.2f}%" if isinstance(rec, float) else str(rec)
+                kpi_col3.metric("Recall (threshold 0.60)", rec_str)
+                
+                kpi_col4, kpi_col5, kpi_col6 = st.columns(3)
+                
+                auc = metrics['roc_auc']
+                auc_str = f"{auc:.4f}" if isinstance(auc, float) else str(auc)
+                kpi_col4.metric("ROC AUC Score", auc_str)
+                
+                pr_auc = metrics['pr_auc']
+                pr_auc_str = f"{pr_auc:.4f}" if isinstance(pr_auc, float) else str(pr_auc)
+                kpi_col5.metric("Precision-Recall AUC", pr_auc_str)
+                
+                brier = metrics['brier_score']
+                brier_str = f"{brier:.4f}" if isinstance(brier, float) else str(brier)
+                kpi_col6.metric("Brier Score Loss", brier_str)
+                
+                # Section 2: Probability Distribution & Calibration
+                col_dist, col_cal = st.columns(2)
+                
+                with col_dist:
+                    st.markdown("##### Predicted Probability Distribution")
+                    fig_hist = go.Figure()
+                    fig_hist.add_trace(go.Bar(
+                        x=[f"{b:.2f}" for b in dist['histogram_bins'][:-1]],
+                        y=dist['histogram_counts'],
+                        marker_color='#10b981',
+                        name="Count"
+                    ))
+                    # Add vertical lines at key thresholds
+                    for t in [0.55, 0.60, 0.65]:
+                        fig_hist.add_vline(x=f"{t:.2f}" if f"{t:.2f}" in [f"{b:.2f}" for b in dist['histogram_bins'][:-1]] else len(dist['histogram_bins'])*t, line_dash="dash", line_color="#ef4444")
+                    
+                    fig_hist.update_layout(
+                        template="plotly_dark",
+                        height=350,
+                        margin=dict(l=20, r=20, t=20, b=20),
+                        xaxis_title="Predicted Prob UP",
+                        yaxis_title="Frequency"
+                    )
+                    st.plotly_chart(fig_hist, use_container_width=True)
+                    
+                    # Threshold table
+                    thresh_df = pd.DataFrame([
+                        {"Threshold": f"Exceeds {t:.2f}", "Count": data['count'], "Percentage": f"{data['percentage']:.2f}%"}
+                        for t, data in dist['threshold_frequencies'].items()
+                    ])
+                    st.dataframe(thresh_df.set_index("Threshold"), use_container_width=True)
+                    
+                with col_cal:
+                    st.markdown("##### Brier Calibration Curve")
+                    prob_true, prob_pred = metrics['calibration_curve']
+                    fig_cal = go.Figure()
+                    
+                    if prob_true and prob_pred:
+                        # Reference line
+                        fig_cal.add_trace(go.Scatter(
+                            x=[0, 1], y=[0, 1],
+                            line=dict(dash='dash', color='rgba(255, 255, 255, 0.3)'),
+                            name="Perfect Calibration"
+                        ))
+                        # Calibration plot
+                        fig_cal.add_trace(go.Scatter(
+                            x=prob_pred, y=prob_true,
+                            mode='lines+markers',
+                            line=dict(color='#3b82f6', width=2),
+                            marker=dict(size=8),
+                            name="Model Calibration"
+                        ))
+                    else:
+                        st.info("Calibration curve not available (low samples).")
+                        
+                    fig_cal.update_layout(
+                        template="plotly_dark",
+                        height=350,
+                        margin=dict(l=20, r=20, t=20, b=20),
+                        xaxis_title="Mean Predicted Probability",
+                        yaxis_title="Fraction of Positives",
+                        xaxis=dict(range=[0, 1]),
+                        yaxis=dict(range=[0, 1])
+                    )
+                    st.plotly_chart(fig_cal, use_container_width=True)
+                    
+                # Section 3: Threshold Sensitivity & Feature Importance
+                col_sens, col_feat = st.columns(2)
+                
+                with col_sens:
+                    st.markdown("##### Threshold Sensitivity (Diagnostic Only)")
+                    sens_df = pd.DataFrame(sensitivity)
+                    
+                    if not sens_df.empty:
+                        fig_sens = make_subplots(specs=[[{"secondary_y": True}]])
+                        fig_sens.add_trace(
+                            go.Bar(x=sens_df['threshold'].astype(str), y=sens_df['net_return'], name="Net Return (%)", marker_color='#10b981'),
+                            secondary_y=False
+                        )
+                        fig_sens.add_trace(
+                            go.Scatter(x=sens_df['threshold'].astype(str), y=sens_df['trade_count'], name="Trade Count", mode='lines+markers', line=dict(color='#a855f7', width=2)),
+                            secondary_y=True
+                        )
+                        
+                        fig_sens.update_layout(
+                            template="plotly_dark",
+                            height=350,
+                            margin=dict(l=20, r=20, t=20, b=20),
+                            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+                        )
+                        fig_sens.update_xaxes(title_text="Decision Threshold")
+                        fig_sens.update_yaxes(title_text="Net Return (%)", secondary_y=False)
+                        fig_sens.update_yaxes(title_text="Trade Count", secondary_y=True)
+                        st.plotly_chart(fig_sens, use_container_width=True)
+                        
+                        # Formatted sensitivity table
+                        st.table(sens_df.rename(columns={
+                            'threshold': 'Threshold',
+                            'trade_count': 'Trades Count',
+                            'win_rate': 'Win Rate',
+                            'net_return': 'Net Return (%)',
+                            'max_drawdown': 'Max Drawdown (%)'
+                        }).set_index("Threshold"))
+                    else:
+                        st.info("Sensitivity metrics not available.")
+                        
+                with col_feat:
+                    st.markdown("##### Feature Importance (Aggregated WF Folds)")
+                    top_15 = importances['top_15']
+                    
+                    if top_15:
+                        feat_names = [f[0] for f in top_15][::-1]
+                        feat_vals = [f[1] * 100 for f in top_15][::-1]
+                        
+                        fig_feat = go.Figure()
+                        fig_feat.add_trace(go.Bar(
+                            x=feat_vals, y=feat_names,
+                            orientation='h',
+                            marker_color='#3b82f6'
+                        ))
+                        fig_feat.update_layout(
+                            template="plotly_dark",
+                            height=480,
+                            margin=dict(l=20, r=20, t=20, b=20),
+                            xaxis_title="Average Importance Weight (%)"
+                        )
+                        st.plotly_chart(fig_feat, use_container_width=True)
+                        st.markdown(f"**Cross-Market Feature Weight**: `{importances['cross_market']}`")
+                    else:
+                        st.info("Feature importances not available.")
+                        
+                # Section 4: Trade & Exposure Diagnostics
+                st.markdown("#### 4. Trade & Exposure Diagnostics")
+                
+                exposure_col1, exposure_col2, exposure_col3 = st.columns(3)
+                
+                # Exposure metric
+                exposure_col1.metric("Strategy Time-in-Market", f"{trade_diag['strategy_exposure_pct']:.2f}%")
+                exposure_col2.metric("Buy & Hold Time-in-Market", f"{trade_diag['bh_exposure_pct']:.2f}%")
+                exposure_col3.metric("Average Holding Period", f"{trade_diag['avg_holding_period_hours']:.1f} hours")
+                
+                if trade_diag['strategy_exposure_pct'] < 5.0:
+                    st.warning("⚠️ **Strategy exposure is extremely low (< 5%)**: The bot acts primarily as a cash-holding avoidance strategy rather than an active predictor.")
+                    
+                st.markdown(f"""
+                *   **Total Losing Trades**: {trade_diag['total_losing_trades']}
+                *   **Bad Entries (No excursion, straight to Stop Loss)**: {trade_diag['bad_entries_count']}
+                *   **Bad Exits (MFE > 0.5%, failed to capture profit before reversing)**: {trade_diag['bad_exits_count']}
+                """)
+                
+                # MAE / MFE Scatter Plot
+                st.markdown("##### Intratrade Excursions (MAE vs MFE)")
+                mae_mfe_points = diag.trade_mae_mfe_list
+                
+                if mae_mfe_points:
+                    points_df = pd.DataFrame(mae_mfe_points)
+                    fig_scatter = go.Figure()
+                    
+                    # Wins
+                    wins = points_df[points_df['is_win'] == True]
+                    if not wins.empty:
+                        fig_scatter.add_trace(go.Scatter(
+                            x=wins['mae'], y=wins['mfe'],
+                            mode='markers',
+                            marker=dict(color='#10b981', size=10, symbol='circle'),
+                            name="Winning Trades",
+                            text=[f"PnL: ${p:,.2f}" for p in wins['net_pnl']]
+                        ))
+                        
+                    # Losses
+                    losses = points_df[points_df['is_win'] == False]
+                    if not losses.empty:
+                        fig_scatter.add_trace(go.Scatter(
+                            x=losses['mae'], y=losses['mfe'],
+                            mode='markers',
+                            marker=dict(color='#ef4444', size=10, symbol='x'),
+                            name="Losing Trades",
+                            text=[f"PnL: ${p:,.2f}" for p in losses['net_pnl']]
+                        ))
+                        
+                    # Add diagonal or stop loss lines
+                    fig_scatter.add_vline(x=Config.STOP_LOSS_PCT * 100, line_dash="dash", line_color="rgba(239, 68, 68, 0.5)", annotation_text="SL Limit")
+                    fig_scatter.add_hline(y=0.5, line_dash="dot", line_color="rgba(255, 255, 255, 0.4)", annotation_text="Profit Excursion Boundary")
+                    
+                    fig_scatter.update_layout(
+                        template="plotly_dark",
+                        height=400,
+                        margin=dict(l=20, r=20, t=20, b=20),
+                        xaxis_title="Maximum Adverse Excursion (MAE %)",
+                        yaxis_title="Maximum Favorable Excursion (MFE %)",
+                        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+                    )
+                    st.plotly_chart(fig_scatter, use_container_width=True)
+                else:
+                    st.info("No trade details available for MAE/MFE scatter plot.")
+                    
+                # Section 5: Regime & Missed Rallies
+                col_regime, col_rallies = st.columns(2)
+                
+                with col_regime:
+                    st.markdown("##### Regime Performance (At Entry State)")
+                    if regimes:
+                        regime_data = []
+                        for state, rdata in regimes.items():
+                            regime_data.append({
+                                "Market State": state.upper(),
+                                "Trades Count": rdata['trades_count'],
+                                "Win Rate": f"{rdata['win_rate']:.2f}%",
+                                "Net PnL ($)": f"{rdata['net_pnl']:+,.2f}"
+                            })
+                        st.table(pd.DataFrame(regime_data).set_index("Market State"))
+                    else:
+                        st.info("No trades executed during OOS regime state.")
+                        
+                with col_rallies:
+                    st.markdown(f"##### Missed Buy-and-Hold Rallies ({len(rallies)} Total)")
+                    if rallies:
+                        rally_data = []
+                        for idx, r in enumerate(rallies[:5], 1):
+                            rally_data.append({
+                                "Rally": f"Rally {idx}",
+                                "Start Date": r['start_time'],
+                                "End Date": r['end_time'],
+                                "B&H Return": f"+{r['return']:.2f}%"
+                            })
+                        st.table(pd.DataFrame(rally_data).set_index("Rally"))
+                        if len(rallies) > 5:
+                            st.info(f"... and {len(rallies) - 5} more missed rallies (bot remained flat).")
+                    else:
+                        st.success("No significant buy-and-hold rallies were missed by the strategy.")
+                        
+        except Exception as e:
+            st.error(f"Diagnostics generation error: {e}")
+            logger.error(f"Diagnostics generation error: {e}", exc_info=True)
