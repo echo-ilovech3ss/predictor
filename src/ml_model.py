@@ -48,12 +48,18 @@ class MarketMLModel:
         X_test_scaled = self.scaler.transform(X_test)
         
         # 4. Train base model on X_fit using XGBClassifier
-        # Limit max_depth and set min_child_weight to prevent overfitting
+        # Compute dynamic scale_pos_weight to balance positive classes and reduce False Negatives (missed trades)
+        num_neg = np.sum(y_fit == 0)
+        num_pos = np.sum(y_fit == 1)
+        scale_pos_weight = num_neg / num_pos if num_pos > 0 else 1.0
+        logger.info(f"Training subset class balance: Negative={num_neg}, Positive={num_pos}. Using scale_pos_weight={scale_pos_weight:.2f}")
+        
         base_clf = XGBClassifier(
-            n_estimators=100,
-            max_depth=4,
-            learning_rate=0.05,
-            min_child_weight=15,
+            n_estimators=120,
+            max_depth=5,
+            learning_rate=0.04,
+            min_child_weight=10,
+            scale_pos_weight=scale_pos_weight,
             random_state=42,
             n_jobs=-1,
             eval_metric='logloss'
