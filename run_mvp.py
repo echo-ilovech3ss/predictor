@@ -152,7 +152,7 @@ def main():
     # Let's check if we have a locally cached processed news dataset
     processed_news_list = []
     
-    if os.path.exists(LOCAL_EXTRACTED_NEWS_PATH) and not args.use_llm-all:
+    if os.path.exists(LOCAL_EXTRACTED_NEWS_PATH) and not args.use_llm_all:
         logger.info(f"Loading cached extracted news features from {LOCAL_EXTRACTED_NEWS_PATH}")
         extracted_df = pd.read_csv(LOCAL_EXTRACTED_NEWS_PATH)
         extracted_df['Date'] = pd.to_datetime(extracted_df['Date'])
@@ -224,8 +224,11 @@ def main():
     for col in bool_cols:
         extracted_df[col] = extracted_df[col].astype(int)
         
+    extracted_df['weighted_sentiment'] = extracted_df['sentiment'] * extracted_df['importance']
+        
     daily_news = extracted_df.groupby('Date').agg(
         avg_sentiment=('sentiment', 'mean'),
+        weighted_sentiment=('weighted_sentiment', 'mean'),
         max_importance=('importance', 'max'),
         bull_avg=('bull_score', 'mean'),
         bear_avg=('bear_score', 'mean'),
@@ -253,6 +256,7 @@ def main():
     
     # Fill dates with NO news with neutral values
     dataset['avg_sentiment'] = dataset['avg_sentiment'].fillna(0.0)
+    dataset['weighted_sentiment'] = dataset['weighted_sentiment'].fillna(0.0)
     dataset['max_importance'] = dataset['max_importance'].fillna(0.0)
     dataset['bull_avg'] = dataset['bull_avg'].fillna(5.0)
     dataset['bear_avg'] = dataset['bear_avg'].fillna(5.0)
@@ -265,24 +269,30 @@ def main():
     for col in count_cols:
         dataset[col] = dataset[col].fillna(0.0)
         
-    # Slice the dataset to start precisely when the news data starts
-    news_start_date = daily_news.index.min()
-    news_end_date = daily_news.index.max()
-    dataset = dataset.loc[news_start_date:news_end_date]
-    logger.info(f"Combined dataset spans {len(dataset)} trading days (from {dataset.index.min().date()} to {dataset.index.max().date()}).")
-    
+    # Add Lagged and Rolling Features to prevent overfitting and capture trend momentum
+    dataset['avg_sentiment_roll3'] = dataset['avg_sentiment'].rolling(window=3).mean().fillna(0)
+    dataset['avg_sentiment_lag1'] = dataset['avg_sentiment'].shift(1).fillna(0)
+    dataset['daily_return_lag1'] = dataset['daily_return'].shift(1).fillna(0)
+    dataset['weighted_sentiment_lag1'] = dataset['weighted_sentiment'].shift(1).fillna(0)
+        
     # ----------------------------------------------------
     # Phase 5: Target Variable Definition (5-day future return direction)
     # ----------------------------------------------------
     logger.info("--- Phase 5: Target Variable ---")
     # future_return = Close(t+5) - Close(t)
     # Target = 1 if future_return > 0 else 0
-    # Note: shift(-5) on daily data shifts future close to today's row
+    # Note: shift(-5) on daily data shifts future close to today's row (computed on full market data to avoid NaNs at the end of the news range)
     dataset['future_close'] = dataset['close'].shift(-5)
     dataset['future_return'] = dataset['future_close'] - dataset['close']
     dataset['target'] = (dataset['future_return'] > 0).astype(int)
     
-    # Drop the last 5 rows because we don't know the future returns for them yet
+    # Slice the dataset to start precisely when the news data starts
+    news_start_date = daily_news.index.min()
+    news_end_date = daily_news.index.max()
+    dataset = dataset.loc[news_start_date:news_end_date]
+    logger.info(f"Combined dataset spans {len(dataset)} trading days (from {dataset.index.min().date()} to {dataset.index.max().date()}).")
+    
+    # Drop the last 5 rows if they don't have future returns (which will be at the end of our fetched market data range)
     cleaned_dataset = dataset.dropna(subset=['future_close'])
     logger.info(f"Cleaned dataset for ML contains {len(cleaned_dataset)} rows after lookahead drop.")
     
@@ -294,13 +304,15 @@ def main():
     technical_cols = [
         'rsi', 'macd', 'macd_signal', 'macd_hist', 
         'dist_sma_20', 'dist_sma_50', 'dist_ema_20', 
-        'dist_bb_upper', 'dist_bb_lower', 'volume_ratio', 'daily_return'
+        'dist_bb_upper', 'dist_bb_lower', 'volume_ratio', 'daily_return',
+        'daily_return_lag1'
     ]
     
     news_cols = [
-        'avg_sentiment', 'max_importance', 'bull_avg', 'bear_avg', 'risk_avg',
+        'avg_sentiment', 'weighted_sentiment', 'max_importance', 'bull_avg', 'bear_avg', 'risk_avg',
         'partnership_count', 'lawsuit_count', 'earnings_count',
-        'guidance_count', 'product_launch_count', 'management_change_count'
+        'guidance_count', 'product_launch_count', 'management_change_count',
+        'avg_sentiment_roll3', 'avg_sentiment_lag1', 'weighted_sentiment_lag1'
     ]
     
     # Split by dates: Train 2023-2024, Test 2025
@@ -324,11 +336,14 @@ def main():
     X_train_B = train_data[technical_cols + news_cols]
     X_test_B = test_data[technical_cols + news_cols]
     
-    # XGBClassifier with initial MVP parameters
+    # Optimized XGBClassifier parameters to prevent overfitting on smaller sample
     params = {
-        'max_depth': 6,
-        'n_estimators': 500,
+        'max_depth': 3,
+        'n_estimators': 300,
         'learning_rate': 0.05,
+        'subsample': 0.8,
+        'colsample_bytree': 0.8,
+        'reg_lambda': 2.0,
         'random_state': 42,
         'eval_metric': 'logloss',
         'use_label_encoder': False
