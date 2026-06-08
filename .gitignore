@@ -1,0 +1,18 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local configurations
+.env
+.env.example
+
+# Local cached datasets
+data_cache/
+*.log
+
+# System files
+.DS_Store
+
+# Temporary scratch scripts
+scratch/test_opencode_zen.py
