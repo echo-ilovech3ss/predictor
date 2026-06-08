@@ -17,3 +17,7 @@ data_cache/
 # Temporary scratch scripts
 scratch/test_opencode_zen.py
 scratch/generate_plots.py
+
+# Local presentation outputs
+walkthrough.md
+*_trades_comparison.png
