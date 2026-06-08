@@ -16,3 +16,4 @@ data_cache/
 
 # Temporary scratch scripts
 scratch/test_opencode_zen.py
+scratch/generate_plots.py
