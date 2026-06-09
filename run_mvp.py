@@ -34,7 +34,7 @@ TICKER_MAP = {
 }
 
 def download_news_data(symbol: str) -> pd.DataFrame:
-    """Download real Apple news headlines if AAPL, otherwise return cached raw news."""
+    """Download real news headlines for AAPL or NIFTY (2023-2026), otherwise return cached news."""
     local_path = os.path.join(DATA_CACHE_DIR, f"{symbol.lower()}_news_raw.csv")
     
     if symbol == "AAPL":
@@ -49,6 +49,70 @@ def download_news_data(symbol: str) -> pd.DataFrame:
         df = pd.read_csv(local_path)
         logger.info(f"Loaded {len(df)} real news articles from local cache.")
         return df
+        
+    elif symbol == "NIFTY":
+        if not os.path.exists(local_path):
+            logger.info("Local NIFTY news cache empty. Fetching real historical NIFTY news from Google News RSS...")
+            import xml.etree.ElementTree as ET
+            import urllib.parse
+            import time
+            
+            start_date = datetime.date(2023, 1, 1)
+            end_today = datetime.date.today()
+            articles = []
+            
+            curr_date = start_date
+            while curr_date < end_today:
+                month_start = curr_date.strftime("%Y-%m-%d")
+                # Advance 1 month
+                if curr_date.month == 12:
+                    next_month = datetime.date(curr_date.year + 1, 1, 1)
+                else:
+                    next_month = datetime.date(curr_date.year, curr_date.month + 1, 1)
+                month_end = min(next_month, end_today).strftime("%Y-%m-%d")
+                
+                logger.info(f"Scraping Nifty news: {month_start} to {month_end}...")
+                query = f"Nifty after:{month_start} before:{month_end}"
+                encoded_query = urllib.parse.quote(query)
+                url = f"https://news.google.com/rss/search?q={encoded_query}&hl=en-IN&gl=IN&ceid=IN:en"
+                
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
+                req = urllib.request.Request(url, headers=headers)
+                
+                try:
+                    with urllib.request.urlopen(req) as response:
+                        xml_data = response.read()
+                        root = ET.fromstring(xml_data)
+                        items = root.findall('.//item')
+                        for item in items:
+                            title = item.find('title').text
+                            pub_date = item.find('pubDate').text
+                            # Format e.g., "Sun, 01 Jan 2023 08:00:00 GMT" -> "2023-01-01"
+                            try:
+                                dt = datetime.datetime.strptime(pub_date, "%a, %d %b %Y %H:%M:%S GMT")
+                                date_str = dt.strftime("%Y-%m-%d")
+                            except Exception:
+                                date_str = pub_date
+                            articles.append({"Date": date_str, "Title": title})
+                except Exception as e:
+                    logger.error(f"Error scraping news for {month_start} to {month_end}: {e}")
+                
+                curr_date = next_month
+                time.sleep(0.5)
+                
+            if len(articles) > 0:
+                df = pd.DataFrame(articles)
+                df.to_csv(local_path, index=False)
+                logger.info(f"Successfully cached {len(df)} real NIFTY news headlines to {local_path}.")
+            else:
+                raise ValueError("Failed to fetch any news articles for NIFTY.")
+                
+        df = pd.read_csv(local_path)
+        logger.info(f"Loaded {len(df)} real news articles from local cache.")
+        return df
+        
     else:
         if os.path.exists(local_path):
             df = pd.read_csv(local_path)
