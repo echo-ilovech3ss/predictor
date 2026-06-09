@@ -392,12 +392,12 @@ def main():
         news_df = generate_synthetic_news_data(symbol, raw_market_df)
     else:
         # We have news data, load market data accordingly
-        news_df['Date'] = pd.to_datetime(news_df['Date'])
+        news_df['Date'] = pd.to_datetime(news_df['Date'], utc=True).dt.tz_localize(None)
         start_date_market = (news_df['Date'].min() - datetime.timedelta(days=100)).strftime("%Y-%m-%d")
         end_date_market = (news_df['Date'].max() + datetime.timedelta(days=15)).strftime("%Y-%m-%d")
         raw_market_df = fetch_market_data(symbol, start_date_market, end_date_market)
         
-    news_df['Date'] = pd.to_datetime(news_df['Date'])
+    news_df['Date'] = pd.to_datetime(news_df['Date'], utc=True).dt.tz_localize(None)
     
     # Calculate indicators
     market_features = calculate_daily_indicators(raw_market_df)
@@ -414,7 +414,7 @@ def main():
     if os.path.exists(local_extracted_path) and not args.use_llm_all:
         logger.info(f"Loading cached extracted news features from {local_extracted_path}")
         extracted_df = pd.read_csv(local_extracted_path)
-        extracted_df['Date'] = pd.to_datetime(extracted_df['Date'])
+        extracted_df['Date'] = pd.to_datetime(extracted_df['Date'], utc=True).dt.tz_localize(None)
     else:
         logger.info(f"Running extraction on {len(news_df)} headlines...")
         
@@ -506,8 +506,8 @@ def main():
     logger.info("--- Phase 4: Dataset Creation ---")
     
     # Align indexes as localized/timezone-naive dates
-    market_features.index = market_features.index.tz_localize(None).normalize()
-    daily_news.index = daily_news.index.tz_localize(None).normalize()
+    market_features.index = pd.to_datetime(market_features.index, utc=True).tz_localize(None).normalize()
+    daily_news.index = pd.to_datetime(daily_news.index, utc=True).tz_localize(None).normalize()
     
     # Combine market features and news features
     dataset = market_features.join(daily_news, how='left')
@@ -594,6 +594,11 @@ def main():
     X_train_B = train_data[technical_cols + news_cols]
     X_test_B = test_data[technical_cols + news_cols]
     
+    # Calculate scale_pos_weight
+    num_neg = np.sum(y_train == 0)
+    num_pos = np.sum(y_train == 1)
+    scale_pos_weight = num_neg / num_pos if num_pos > 0 else 1.0
+    
     # Optimized XGBClassifier parameters to prevent overfitting on smaller sample
     params = {
         'max_depth': 3,
@@ -602,10 +607,60 @@ def main():
         'subsample': 0.8,
         'colsample_bytree': 0.8,
         'reg_lambda': 2.0,
+        'scale_pos_weight': scale_pos_weight,
         'random_state': 42,
         'eval_metric': 'logloss',
         'use_label_encoder': False
     }
+    
+    # Threshold tuning helper function using 5-fold TimeSeriesSplit on Train set to maximize strategy returns
+    def get_best_threshold(X_tr, y_tr, base_params):
+        from sklearn.model_selection import TimeSeriesSplit
+        tscv = TimeSeriesSplit(n_splits=5)
+        oof_probas = np.zeros(len(X_tr))
+        oof_mask = np.zeros(len(X_tr), dtype=bool)
+        
+        for train_cv_idx, val_cv_idx in tscv.split(X_tr):
+            X_fold_tr, X_fold_val = X_tr.iloc[train_cv_idx], X_tr.iloc[val_cv_idx]
+            y_fold_tr, y_fold_val = y_tr.iloc[train_cv_idx], y_tr.iloc[val_cv_idx]
+            
+            num_fold_neg = np.sum(y_fold_tr == 0)
+            num_fold_pos = np.sum(y_fold_tr == 1)
+            fold_spw = num_fold_neg / num_fold_pos if num_fold_pos > 0 else 1.0
+            
+            fold_params = base_params.copy()
+            fold_params['scale_pos_weight'] = fold_spw
+            
+            fold_clf = XGBClassifier(**fold_params)
+            fold_clf.fit(X_fold_tr, y_fold_tr, verbose=False)
+            
+            val_proba = fold_clf.predict_proba(X_fold_val)[:, 1]
+            oof_probas[val_cv_idx] = val_proba
+            oof_mask[val_cv_idx] = True
+            
+        oof_p = oof_probas[oof_mask]
+        oof_daily_ret = train_data['daily_return'].iloc[oof_mask]
+        
+        best_t = 0.50
+        best_oof_ret = -999.0
+        
+        for t in np.linspace(0.40, 0.70, 61):
+            preds = (oof_p >= t).astype(int)
+            sig = pd.Series(preds, index=oof_daily_ret.index).shift(1).fillna(0)
+            ret = sig * oof_daily_ret
+            cum_ret = (1 + ret).cumprod() - 1
+            net_ret = cum_ret.iloc[-1] if len(cum_ret) > 0 else -999.0
+            
+            if np.sum(preds) >= 10:
+                if net_ret > best_oof_ret:
+                    best_oof_ret = net_ret
+                    best_t = t
+        return float(best_t)
+        
+    logger.info("Tuning prediction thresholds on training set using Out-of-Fold cross-validation...")
+    thresh_A = get_best_threshold(X_train_A, y_train, params)
+    thresh_B = get_best_threshold(X_train_B, y_train, params)
+    logger.info(f"Optimal Thresholds found - Model A: {thresh_A:.3f}, Model B: {thresh_B:.3f}")
     
     # Model A: Technical Indicators Only
     logger.info("Training Model A (Technical Indicators Only)...")
@@ -622,9 +677,9 @@ def main():
     # ----------------------------------------------------
     logger.info("--- Phase 7: Evaluation ---")
     
-    def evaluate(model, X_test, y_test):
-        preds = model.predict(X_test)
+    def evaluate(model, X_test, y_test, threshold=0.50):
         probas = model.predict_proba(X_test)[:, 1]
+        preds = (probas >= threshold).astype(int)
         
         acc = accuracy_score(y_test, preds)
         prec = precision_score(y_test, preds, zero_division=0)
@@ -643,8 +698,8 @@ def main():
             "preds": preds
         }
         
-    results_A = evaluate(model_A, X_test_A, y_test)
-    results_B = evaluate(model_B, X_test_B, y_test)
+    results_A = evaluate(model_A, X_test_A, y_test, threshold=thresh_A)
+    results_B = evaluate(model_B, X_test_B, y_test, threshold=thresh_B)
     
     # Calculate daily strategy returns
     sig_A = pd.Series(results_A['preds'], index=test_data.index).shift(1).fillna(0)
