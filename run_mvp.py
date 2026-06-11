@@ -120,6 +120,83 @@ def download_news_data(symbol: str) -> pd.DataFrame:
             return df
         return pd.DataFrame()
 
+def filter_relevant_news(news_df: pd.DataFrame, symbol: str) -> pd.DataFrame:
+    """Filter out news headlines that are irrelevant to the target asset."""
+    if news_df.empty:
+        return news_df
+        
+    logger.info(f"Filtering news relevance for {symbol}. Original count: {len(news_df)}")
+    
+    symbol_lower = symbol.lower()
+    
+    if symbol == "NIFTY":
+        whitelist = [
+            "sensex", "nifty", "bse", "nse", "market", "stocks", "shares", "index", 
+            "trading", "rally", "fall", "gain", "loss", "investor", "rupee", "economy", 
+            "rbi", "inflation", "budget", "fed", "india", "indian"
+        ]
+    elif symbol == "AAPL":
+        whitelist = ["aapl", "apple", "iphone", "ipad", "macbook", "ios", "tim cook", "vision pro", "app store"]
+    elif symbol == "NVDA":
+        whitelist = ["nvda", "nvidia", "gpu", "h100", "blackwell", "ai chip", "jensen huang", "semiconductor"]
+    elif symbol == "TSLA":
+        whitelist = ["tsla", "tesla", "elon musk", "ev", "cybertruck", "model 3", "model y", "gigafactory"]
+    elif symbol == "MSFT":
+        whitelist = ["msft", "microsoft", "windows", "azure", "openai", "copilot", "satya nadella", "xbox"]
+    else:
+        whitelist = [symbol_lower]
+        
+    general_financial = ["market", "stock", "share", "earnings", "revenue", "profit", "sec", "fed", "nasdaq", "dow", "sp 500"]
+    
+    if symbol != "NIFTY":
+        whitelist_words = whitelist + general_financial
+    else:
+        whitelist_words = whitelist
+        
+    def is_relevant(title: str) -> bool:
+        title_lower = str(title).lower()
+        for word in whitelist_words:
+            if word in title_lower:
+                return True
+        return False
+        
+    filtered_df = news_df[news_df['Title'].apply(is_relevant)].copy()
+    logger.info(f"Filtered count: {len(filtered_df)} ({len(filtered_df)/len(news_df):.1%} retained)")
+    return filtered_df
+
+def fetch_cross_asset_data(symbol: str, start_date: str, end_date: str) -> pd.DataFrame:
+    """Fetch USD/INR exchange rate for NIFTY or VIX/DXY for US stocks from Yahoo Finance."""
+    import yfinance as yf
+    
+    features = pd.DataFrame()
+    is_nifty = (symbol == "NIFTY")
+    
+    try:
+        if is_nifty:
+            logger.info("Fetching USD/INR cross-asset data...")
+            usdinr = yf.Ticker("USDINR=X").history(start=start_date, end=end_date, interval="1d")
+            if not usdinr.empty:
+                usdinr.index = pd.to_datetime(usdinr.index, utc=True).tz_localize(None).normalize()
+                features['usdinr_level'] = usdinr['Close']
+                features['usdinr_change_5d'] = usdinr['Close'].pct_change(5).fillna(0)
+        else:
+            logger.info("Fetching VIX and DXY cross-asset data...")
+            vix = yf.Ticker("^VIX").history(start=start_date, end=end_date, interval="1d")
+            dxy = yf.Ticker("DX-Y.NYB").history(start=start_date, end=end_date, interval="1d")
+            
+            if not vix.empty:
+                vix.index = pd.to_datetime(vix.index, utc=True).tz_localize(None).normalize()
+                features['vix_level'] = vix['Close']
+                features['vix_change_5d'] = vix['Close'].pct_change(5).fillna(0)
+            if not dxy.empty:
+                dxy.index = pd.to_datetime(dxy.index, utc=True).tz_localize(None).normalize()
+                features['dxy_level'] = dxy['Close']
+                features['dxy_change_5d'] = dxy['Close'].pct_change(5).fillna(0)
+    except Exception as e:
+        logger.error(f"Failed to fetch cross-asset data: {e}")
+        
+    return features
+
 def generate_synthetic_news_data(symbol: str, market_df: pd.DataFrame) -> pd.DataFrame:
     """Generate a realistic synthetic news headlines dataset matching the stock price trends."""
     logger.info(f"Generating realistic news dataset for {symbol} based on price trends...")
@@ -268,6 +345,55 @@ def calculate_daily_indicators(df: pd.DataFrame) -> pd.DataFrame:
     vol_ma_20 = data['volume'].rolling(window=20).mean()
     data['volume_ratio'] = data['volume'] / vol_ma_20.replace(0, 1.0)
     
+    # 7. ATR (14)
+    prev_close = data['close'].shift(1)
+    tr = pd.concat([
+        data['high'] - data['low'],
+        (data['high'] - prev_close).abs(),
+        (data['low'] - prev_close).abs()
+    ], axis=1).max(axis=1)
+    data['atr'] = tr.rolling(window=14).mean()
+    data['atr_ratio'] = data['atr'] / data['close'].replace(0, 1.0)
+    
+    # 8. ADX (14)
+    up_move = data['high'].diff()
+    down_move = prev_close - data['low']  # Low(t-1) - Low(t)
+    pos_dm = np.where((up_move > down_move) & (up_move > 0), up_move, 0.0)
+    neg_dm = np.where((down_move > up_move) & (down_move > 0), down_move, 0.0)
+    
+    tr_14 = tr.rolling(window=14).mean().replace(0, np.nan)
+    pos_di = 100 * (pd.Series(pos_dm, index=data.index).rolling(window=14).mean() / tr_14)
+    neg_di = 100 * (pd.Series(neg_dm, index=data.index).rolling(window=14).mean() / tr_14)
+    
+    di_sum = (pos_di + neg_di).replace(0, np.nan)
+    dx = 100 * (pos_di - neg_di).abs() / di_sum
+    data['adx'] = dx.rolling(window=14).mean().fillna(50)
+    
+    # 9. Stochastic Oscillator (14, 3, 3)
+    low_14 = data['low'].rolling(window=14).min()
+    high_14 = data['high'].rolling(window=14).max()
+    stoch_range = (high_14 - low_14).replace(0, np.nan)
+    data['stoch_k'] = 100 * (data['close'] - low_14) / stoch_range
+    data['stoch_k'] = data['stoch_k'].fillna(50)
+    data['stoch_d'] = data['stoch_k'].rolling(window=3).mean().fillna(50)
+    
+    # 10. OBV (On-Balance Volume) Normalized Z-score
+    direction = np.sign(data['close'].diff().fillna(0))
+    obv = (direction * data['volume']).cumsum()
+    obv_mean = obv.rolling(window=20).mean()
+    obv_std = obv.rolling(window=20).std().replace(0, 1.0)
+    data['obv_z'] = (obv - obv_mean) / obv_std
+    data['obv_z'] = data['obv_z'].fillna(0.0)
+    
+    # 11. ROC (5, 10, 20)
+    data['roc_5'] = 100 * data['close'].pct_change(5).fillna(0)
+    data['roc_10'] = 100 * data['close'].pct_change(10).fillna(0)
+    data['roc_20'] = 100 * data['close'].pct_change(20).fillna(0)
+    
+    # 12. Volatility (20-day rolling std of returns)
+    daily_ret = data['close'].pct_change().fillna(0)
+    data['volatility_20d'] = daily_ret.rolling(window=20).std().fillna(0)
+    
     # Create final technical features
     features = pd.DataFrame(index=data.index)
     features['close'] = data['close']
@@ -286,11 +412,23 @@ def calculate_daily_indicators(df: pd.DataFrame) -> pd.DataFrame:
     features['dist_bb_upper'] = (data['bb_upper'] - data['close']) / safe_close
     features['dist_bb_lower'] = (data['close'] - data['bb_lower']) / safe_close
     features['volume_ratio'] = data['volume_ratio']
-    features['daily_return'] = data['close'].pct_change().fillna(0)
+    features['daily_return'] = daily_ret
+    
+    # Add new indicators
+    features['atr_ratio'] = data['atr_ratio']
+    features['adx'] = data['adx']
+    features['stoch_k'] = data['stoch_k']
+    features['stoch_d'] = data['stoch_d']
+    features['obv_z'] = data['obv_z']
+    features['roc_5'] = data['roc_5']
+    features['roc_10'] = data['roc_10']
+    features['roc_20'] = data['roc_20']
+    features['volatility_20d'] = data['volatility_20d']
     
     # Fill any remaining NaNs with 0
     features = features.fillna(0)
     return features
+
 
 def update_mvp_results(symbol: str, results_dict: dict):
     """Save model performance results into a living local JSON dashboard."""
@@ -321,14 +459,16 @@ This MVP tests whether incorporating LLM-extracted news sentiment and events imp
 
 ## Dashboard Overview
 
-| Symbol | Period | Model A (Tech Only) | Model B (Tech + News) | Accuracy Shift | Status |
-| :--- | :--- | :---: | :---: | :---: | :---: |
+| Symbol | Period | Model A (Tech Only) | Model B (Tech + News) | Accuracy Shift | Strategy B Return | Buy & Hold | B Sharpe | B Max DD | Status |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 """
     
     for sym, res in all_results.items():
         diff = res['B_accuracy'] - res['A_accuracy']
         status = "**PROFITABLE**" if res.get('B_net_return_pct', 0) > 0 else "LOSS"
-        md += f"| **{sym}** | {res['test_start']} to {res['test_end']} | {res['A_accuracy']:.2%} | {res['B_accuracy']:.2%} | **{diff:+.2%}** | {status} |\n"
+        b_sharpe = res.get('B_sharpe', 0.0)
+        b_max_dd = res.get('B_max_dd', 0.0)
+        md += f"| **{sym}** | {res['test_start']} to {res['test_end']} | {res['A_accuracy']:.2%} | {res['B_accuracy']:.2%} | **{diff:+.2%}** | **{res.get('B_net_return_pct', 0):+.2f}%** | {res.get('bh_net_return_pct', 0):+.2f}% | {b_sharpe:.2f} | {b_max_dd:.2f}% | {status} |\n"
         
     md += "\n---\n\n"
     
@@ -337,12 +477,14 @@ This MVP tests whether incorporating LLM-extracted news sentiment and events imp
         diff_pct = (res['B_accuracy'] - res['A_accuracy']) * 100
         md += f"""## Symbol Analysis: {sym}
 
+- **Train/Test Method**: Walk-Forward Retraining (Quarterly)
 - **Train Period**: {res['train_start']} to {res['train_end']}
 - **Test Period**: {res['test_start']} to {res['test_end']}
 - **Technical Model A Accuracy**: {res['A_accuracy']:.2%}
 - **News-Enhanced Model B Accuracy**: {res['B_accuracy']:.2%} (Shift: **{diff_pct:+.2f}%**)
 - **Buy & Hold Cumulative Return**: {res.get('bh_net_return_pct', 0):+.2f}%
-- **Model B Strategy Net Return**: **{res.get('B_net_return_pct', 0):+.2f}%**
+- **Model A Strategy Net Return**: {res.get('A_net_return_pct', 0):+.2f}% (Sharpe: {res.get('A_sharpe', 0.0):.2f}, Max DD: {res.get('A_max_dd', 0.0):.2f}%)
+- **Model B Strategy Net Return**: **{res.get('B_net_return_pct', 0):+.2f}%** (Sharpe: {res.get('B_sharpe', 0.0):.2f}, Max DD: {res.get('B_max_dd', 0.0):.2f}%)
 
 ### Strategy Returns & Trades Visualization
 ![{sym} Strategy Returns Comparison](/Users/arunmehta/.gemini/antigravity/brain/f7b90d3f-b23d-4ea0-8898-305d806e2758/{sym.lower()}_trades_comparison.png)
@@ -356,6 +498,9 @@ This MVP tests whether incorporating LLM-extracted news sentiment and events imp
 | **Recall** | {res['A_recall']:.4f} | {res['B_recall']:.4f} | {res['B_recall'] - res['A_recall']:+.4f} |
 | **F1 Score** | {res['A_f1']:.4f} | {res['B_f1']:.4f} | {res['B_f1'] - res['A_f1']:+.4f} |
 | **ROC AUC** | {res['A_roc_auc']:.4f} | {res['B_roc_auc']:.4f} | {res['B_roc_auc'] - res['A_roc_auc']:+.4f} |
+| **Longs / Shorts Count** | {res.get('A_longs_count', 0)} / {res.get('A_shorts_count', 0)} | {res.get('B_longs_count', 0)} / {res.get('B_shorts_count', 0)} | N/A |
+| **Sharpe Ratio** | {res.get('A_sharpe', 0.0):.4f} | {res.get('B_sharpe', 0.0):.4f} | {res.get('B_sharpe', 0.0) - res.get('A_sharpe', 0.0):+.4f} |
+| **Max Drawdown** | {res.get('A_max_dd', 0.0):.2f}% | {res.get('B_max_dd', 0.0):.2f}% | {res.get('B_max_dd', 0.0) - res.get('A_max_dd', 0.0):+.2f}% |
 
 """
         
@@ -364,11 +509,387 @@ This MVP tests whether incorporating LLM-extracted news sentiment and events imp
         f.write(md)
     logger.info(f"Walkthrough dashboard successfully rebuilt at {walkthrough_path}")
 
+class MarketEnsemble:
+    """An equal-weight ensemble of XGBoost, LightGBM, and CatBoost."""
+    def __init__(self, xgb_params=None, lgb_params=None, cb_params=None):
+        self.xgb_params = xgb_params or {}
+        self.lgb_params = lgb_params or {}
+        self.cb_params = cb_params or {}
+        
+        self.xgb = None
+        self.lgb = None
+        self.cb = None
+        
+    def fit(self, X, y):
+        from xgboost import XGBClassifier
+        from lightgbm import LGBMClassifier
+        from catboost import CatBoostClassifier
+        
+        num_neg = np.sum(y == 0)
+        num_pos = np.sum(y == 1)
+        spw = num_neg / num_pos if num_pos > 0 else 1.0
+        
+        # XGBoost
+        xgb_p = self.xgb_params.copy()
+        xgb_p['scale_pos_weight'] = spw
+        if 'random_state' not in xgb_p: xgb_p['random_state'] = 42
+        if 'eval_metric' not in xgb_p: xgb_p['eval_metric'] = 'logloss'
+        if 'use_label_encoder' not in xgb_p: xgb_p['use_label_encoder'] = False
+        self.xgb = XGBClassifier(**xgb_p)
+        self.xgb.fit(X, y, verbose=False)
+        
+        # LightGBM
+        lgb_p = self.lgb_params.copy()
+        lgb_p['scale_pos_weight'] = spw
+        if 'random_state' not in lgb_p: lgb_p['random_state'] = 42
+        if 'verbose' not in lgb_p: lgb_p['verbose'] = -1
+        self.lgb = LGBMClassifier(**lgb_p)
+        self.lgb.fit(X, y)
+        
+        # CatBoost
+        cb_p = self.cb_params.copy()
+        cb_p['scale_pos_weight'] = spw
+        if 'random_seed' not in cb_p: cb_p['random_seed'] = 42
+        if 'verbose' not in cb_p: cb_p['verbose'] = 0
+        self.cb = CatBoostClassifier(**cb_p)
+        self.cb.fit(X, y)
+        
+    def predict_proba(self, X):
+        xgb_prob = self.xgb.predict_proba(X)[:, 1]
+        lgb_prob = self.lgb.predict_proba(X)[:, 1]
+        cb_prob = self.cb.predict_proba(X)[:, 1]
+        return (xgb_prob + lgb_prob + cb_prob) / 3.0
+
+def tune_ensemble_hyperparameters(X_tr, y_tr, train_returns, n_trials=30):
+    """Tune ensemble hyperparameters using Optuna to maximize OOF strategy return."""
+    import optuna
+    optuna.logging.set_verbosity(optuna.logging.WARNING)
+    from sklearn.model_selection import TimeSeriesSplit
+    
+    def objective(trial):
+        max_depth = trial.suggest_int('max_depth', 2, 6)
+        learning_rate = trial.suggest_float('learning_rate', 0.01, 0.2, log=True)
+        n_estimators = trial.suggest_int('n_estimators', 100, 400)
+        subsample = trial.suggest_float('subsample', 0.6, 1.0)
+        colsample_bytree = trial.suggest_float('colsample_bytree', 0.6, 1.0)
+        reg_lambda = trial.suggest_float('reg_lambda', 0.5, 5.0)
+        
+        xgb_p = {
+            'max_depth': max_depth,
+            'learning_rate': learning_rate,
+            'n_estimators': n_estimators,
+            'subsample': subsample,
+            'colsample_bytree': colsample_bytree,
+            'reg_lambda': reg_lambda,
+            'random_state': 42
+        }
+        
+        lgb_p = {
+            'max_depth': max_depth,
+            'num_leaves': int(2 ** max_depth - 1),
+            'learning_rate': learning_rate,
+            'n_estimators': n_estimators,
+            'subsample': subsample,
+            'colsample_bytree': colsample_bytree,
+            'reg_lambda': reg_lambda,
+            'random_state': 42,
+            'verbose': -1
+        }
+        
+        cb_p = {
+            'depth': max_depth,
+            'learning_rate': learning_rate,
+            'iterations': n_estimators,
+            'subsample': subsample,
+            'l2_leaf_reg': reg_lambda,
+            'random_seed': 42,
+            'verbose': 0
+        }
+        
+        tscv = TimeSeriesSplit(n_splits=3)
+        oof_probas = np.zeros(len(X_tr))
+        oof_mask = np.zeros(len(X_tr), dtype=bool)
+        
+        for train_cv_idx, val_cv_idx in tscv.split(X_tr):
+            X_fold_tr, X_fold_val = X_tr.iloc[train_cv_idx], X_tr.iloc[val_cv_idx]
+            y_fold_tr, y_fold_val = y_tr.iloc[train_cv_idx], y_tr.iloc[val_cv_idx]
+            
+            ensemble = MarketEnsemble(xgb_p, lgb_p, cb_p)
+            ensemble.fit(X_fold_tr, y_fold_tr)
+            
+            val_proba = ensemble.predict_proba(X_fold_val)
+            oof_probas[val_cv_idx] = val_proba
+            oof_mask[val_cv_idx] = True
+            
+        oof_p = oof_probas[oof_mask]
+        oof_ret = train_returns.iloc[oof_mask]
+        
+        best_net_ret = -999.0
+        for t in np.linspace(0.45, 0.65, 21):
+            sizes = []
+            for prob in oof_p:
+                if prob >= t:
+                    size = min(1.0, (prob - t) / (1.0 - t) * 2.0)
+                elif prob < (1.0 - t):
+                    size = -min(1.0, ((1.0 - prob) - t) / (1.0 - t) * 2.0)
+                else:
+                    size = 0.0
+                sizes.append(size)
+                
+            sizes = pd.Series(sizes, index=oof_ret.index).shift(1).fillna(0)
+            ret = sizes * oof_ret
+            cum_ret = (1 + ret).cumprod() - 1
+            net_ret = cum_ret.iloc[-1] if len(cum_ret) > 0 else -999.0
+            if net_ret > best_net_ret:
+                best_net_ret = net_ret
+                
+        return best_net_ret
+        
+    study = optuna.create_study(direction='maximize')
+    study.optimize(objective, n_trials=n_trials)
+    best_params = study.best_params
+    logger.info(f"Optuna Best Params (trials={n_trials}): {best_params} with OOF return: {study.best_value:.2%}")
+    
+    max_depth = best_params['max_depth']
+    learning_rate = best_params['learning_rate']
+    n_estimators = best_params['n_estimators']
+    subsample = best_params['subsample']
+    colsample_bytree = best_params['colsample_bytree']
+    reg_lambda = best_params['reg_lambda']
+    
+    xgb_p = {
+        'max_depth': max_depth,
+        'learning_rate': learning_rate,
+        'n_estimators': n_estimators,
+        'subsample': subsample,
+        'colsample_bytree': colsample_bytree,
+        'reg_lambda': reg_lambda,
+        'random_state': 42
+    }
+    
+    lgb_p = {
+        'max_depth': max_depth,
+        'num_leaves': int(2 ** max_depth - 1),
+        'learning_rate': learning_rate,
+        'n_estimators': n_estimators,
+        'subsample': subsample,
+        'colsample_bytree': colsample_bytree,
+        'reg_lambda': reg_lambda,
+        'random_state': 42,
+        'verbose': -1
+    }
+    
+    cb_p = {
+        'depth': max_depth,
+        'learning_rate': learning_rate,
+        'iterations': n_estimators,
+        'subsample': subsample,
+        'l2_leaf_reg': reg_lambda,
+        'random_seed': 42,
+        'verbose': 0
+    }
+    
+    return xgb_p, lgb_p, cb_p
+
+def get_best_threshold_ensemble(X_tr, y_tr, train_returns, xgb_p, lgb_p, cb_p):
+    """Find the best prediction threshold for the ensemble on the training set using CV."""
+    from sklearn.model_selection import TimeSeriesSplit
+    tscv = TimeSeriesSplit(n_splits=3)
+    oof_probas = np.zeros(len(X_tr))
+    oof_mask = np.zeros(len(X_tr), dtype=bool)
+    
+    for train_cv_idx, val_cv_idx in tscv.split(X_tr):
+        X_fold_tr, X_fold_val = X_tr.iloc[train_cv_idx], X_tr.iloc[val_cv_idx]
+        y_fold_tr, y_fold_val = y_tr.iloc[train_cv_idx], y_tr.iloc[val_cv_idx]
+        
+        ensemble = MarketEnsemble(xgb_p, lgb_p, cb_p)
+        ensemble.fit(X_fold_tr, y_fold_tr)
+        
+        val_proba = ensemble.predict_proba(X_fold_val)
+        oof_probas[val_cv_idx] = val_proba
+        oof_mask[val_cv_idx] = True
+        
+    oof_p = oof_probas[oof_mask]
+    oof_ret = train_returns.iloc[oof_mask]
+    
+    best_t = 0.50
+    best_oof_ret = -999.0
+    
+    for t in np.linspace(0.40, 0.70, 61):
+        sizes = []
+        for prob in oof_p:
+            if prob >= t:
+                size = min(1.0, (prob - t) / (1.0 - t) * 2.0)
+            elif prob < (1.0 - t):
+                size = -min(1.0, ((1.0 - prob) - t) / (1.0 - t) * 2.0)
+            else:
+                size = 0.0
+            sizes.append(size)
+            
+        sizes = pd.Series(sizes, index=oof_ret.index).shift(1).fillna(0)
+        ret = sizes * oof_ret
+        cum_ret = (1 + ret).cumprod() - 1
+        net_ret = cum_ret.iloc[-1] if len(cum_ret) > 0 else -999.0
+        
+        if net_ret > best_oof_ret:
+            best_oof_ret = net_ret
+            best_t = t
+            
+    return float(best_t)
+
+def compute_position_sizes(probas: pd.Series, thresholds: pd.Series) -> pd.Series:
+    """Compute continuous position sizes (long/short) based on confidence and thresholds."""
+    sizes = []
+    for prob, t in zip(probas, thresholds):
+        if prob >= t:
+            size = min(1.0, (prob - t) / (1.0 - t) * 2.0)
+        elif prob < (1.0 - t):
+            size = -min(1.0, ((1.0 - prob) - t) / (1.0 - t) * 2.0)
+        else:
+            size = 0.0
+        sizes.append(size)
+    return pd.Series(sizes, index=probas.index)
+
+def calculate_max_drawdown(cum_returns: pd.Series) -> float:
+    """Calculate the maximum drawdown of a cumulative returns series."""
+    wealth_index = 1.0 + cum_returns
+    peaks = wealth_index.cummax()
+    drawdowns = (wealth_index - peaks) / peaks.replace(0, 1.0)
+    return float(drawdowns.min() * 100)
+
+def calculate_sharpe_ratio(daily_returns: pd.Series) -> float:
+    """Calculate the annualized Sharpe ratio (assuming 252 trading days per year)."""
+    mean_ret = daily_returns.mean()
+    std_ret = daily_returns.std()
+    if std_ret == 0:
+        return 0.0
+    return float((mean_ret / std_ret) * np.sqrt(252))
+
+def run_walk_forward(cleaned_dataset, technical_cols, news_cols, target_col, run_optuna=True, n_trials=30):
+    """Run expanding window walk-forward validation for both Model A and Model B."""
+    n_samples = len(cleaned_dataset)
+    initial_train_size = 252
+    retrain_every = 63
+    
+    if n_samples <= initial_train_size:
+        raise ValueError(f"Dataset length ({n_samples}) must be greater than initial train size ({initial_train_size}).")
+        
+    logger.info(f"Starting expanding window walk-forward. Initial train size: {initial_train_size}, retrain every: {retrain_every}")
+    
+    test_dates = cleaned_dataset.index[initial_train_size:]
+    
+    probas_A = []
+    probas_B = []
+    thresholds_A = []
+    thresholds_B = []
+    
+    initial_train_data = cleaned_dataset.iloc[:initial_train_size]
+    
+    X_init_A = initial_train_data[technical_cols]
+    y_init = initial_train_data[target_col]
+    init_returns = initial_train_data['daily_return']
+    
+    if run_optuna:
+        logger.info("--- Optuna Tuning Model A ---")
+        xgb_p_A, lgb_p_A, cb_p_A = tune_ensemble_hyperparameters(X_init_A, y_init, init_returns, n_trials=n_trials)
+        
+        X_init_B = initial_train_data[technical_cols + news_cols]
+        logger.info("--- Optuna Tuning Model B ---")
+        xgb_p_B, lgb_p_B, cb_p_B = tune_ensemble_hyperparameters(X_init_B, y_init, init_returns, n_trials=n_trials)
+    else:
+        xgb_p_A = xgb_p_B = {'max_depth': 3, 'learning_rate': 0.05, 'n_estimators': 300, 'subsample': 0.8, 'colsample_bytree': 0.8, 'reg_lambda': 2.0}
+        lgb_p_A = lgb_p_B = {'max_depth': 3, 'num_leaves': 7, 'learning_rate': 0.05, 'n_estimators': 300, 'subsample': 0.8, 'colsample_bytree': 0.8, 'reg_lambda': 2.0, 'verbose': -1}
+        cb_p_A = cb_p_B = {'depth': 3, 'learning_rate': 0.05, 'iterations': 300, 'subsample': 0.8, 'l2_leaf_reg': 2.0, 'verbose': 0}
+        
+    for i in range(initial_train_size, n_samples, retrain_every):
+        train_data = cleaned_dataset.iloc[:i]
+        test_data = cleaned_dataset.iloc[i : min(i + retrain_every, n_samples)]
+        
+        logger.info(f"Walk-Forward step: Train shape {train_data.shape}, Test shape {test_data.shape}")
+        
+        X_tr_A = train_data[technical_cols]
+        y_tr = train_data[target_col]
+        X_te_A = test_data[technical_cols]
+        
+        X_tr_B = train_data[technical_cols + news_cols]
+        X_te_B = test_data[technical_cols + news_cols]
+        
+        thresh_A = get_best_threshold_ensemble(X_tr_A, y_tr, train_data['daily_return'], xgb_p_A, lgb_p_A, cb_p_A)
+        thresholds_A.extend([thresh_A] * len(test_data))
+        
+        ensemble_A = MarketEnsemble(xgb_p_A, lgb_p_A, cb_p_A)
+        ensemble_A.fit(X_tr_A, y_tr)
+        pred_prob_A = ensemble_A.predict_proba(X_te_A)
+        probas_A.extend(pred_prob_A)
+        
+        thresh_B = get_best_threshold_ensemble(X_tr_B, y_tr, train_data['daily_return'], xgb_p_B, lgb_p_B, cb_p_B)
+        thresholds_B.extend([thresh_B] * len(test_data))
+        
+        ensemble_B = MarketEnsemble(xgb_p_B, lgb_p_B, cb_p_B)
+        ensemble_B.fit(X_tr_B, y_tr)
+        pred_prob_B = ensemble_B.predict_proba(X_te_B)
+        probas_B.extend(pred_prob_B)
+        
+    return (
+        pd.Series(probas_A, index=test_dates),
+        pd.Series(probas_B, index=test_dates),
+        pd.Series(thresholds_A, index=test_dates),
+        pd.Series(thresholds_B, index=test_dates),
+        cleaned_dataset.loc[test_dates]
+    )
+
+def run_single_split(cleaned_dataset, technical_cols, news_cols, target_col, run_optuna=True, n_trials=30):
+    """Run a single train/test split (Train: 2023-2024, Test: 2025+)."""
+    train_split_end = pd.Timestamp("2024-12-31")
+    
+    train_data = cleaned_dataset.loc[:train_split_end]
+    test_data = cleaned_dataset.loc[train_split_end + pd.Timedelta(days=1):]
+    
+    logger.info(f"Running single train/test split. Train: {train_data.index.min().date()} to {train_data.index.max().date()}, Test: {test_data.index.min().date()} to {test_data.index.max().date()}")
+    
+    X_train_A = train_data[technical_cols]
+    y_train = train_data[target_col]
+    X_test_A = test_data[technical_cols]
+    
+    X_train_B = train_data[technical_cols + news_cols]
+    X_test_B = test_data[technical_cols + news_cols]
+    
+    if run_optuna:
+        logger.info("--- Optuna Tuning Model A ---")
+        xgb_p_A, lgb_p_A, cb_p_A = tune_ensemble_hyperparameters(X_train_A, y_train, train_data['daily_return'], n_trials=n_trials)
+        logger.info("--- Optuna Tuning Model B ---")
+        xgb_p_B, lgb_p_B, cb_p_B = tune_ensemble_hyperparameters(X_train_B, y_train, train_data['daily_return'], n_trials=n_trials)
+    else:
+        xgb_p_A = xgb_p_B = {'max_depth': 3, 'learning_rate': 0.05, 'n_estimators': 300, 'subsample': 0.8, 'colsample_bytree': 0.8, 'reg_lambda': 2.0}
+        lgb_p_A = lgb_p_B = {'max_depth': 3, 'num_leaves': 7, 'learning_rate': 0.05, 'n_estimators': 300, 'subsample': 0.8, 'colsample_bytree': 0.8, 'reg_lambda': 2.0, 'verbose': -1}
+        cb_p_A = cb_p_B = {'depth': 3, 'learning_rate': 0.05, 'iterations': 300, 'subsample': 0.8, 'l2_leaf_reg': 2.0, 'verbose': 0}
+        
+    thresh_A = get_best_threshold_ensemble(X_train_A, y_train, train_data['daily_return'], xgb_p_A, lgb_p_A, cb_p_A)
+    thresh_B = get_best_threshold_ensemble(X_train_B, y_train, train_data['daily_return'], xgb_p_B, lgb_p_B, cb_p_B)
+    
+    ensemble_A = MarketEnsemble(xgb_p_A, lgb_p_A, cb_p_A)
+    ensemble_A.fit(X_train_A, y_train)
+    probas_A = ensemble_A.predict_proba(X_test_A)
+    
+    ensemble_B = MarketEnsemble(xgb_p_B, lgb_p_B, cb_p_B)
+    ensemble_B.fit(X_train_B, y_train)
+    probas_B = ensemble_B.predict_proba(X_test_B)
+    
+    return (
+        pd.Series(probas_A, index=test_data.index),
+        pd.Series(probas_B, index=test_data.index),
+        pd.Series([thresh_A] * len(test_data), index=test_data.index),
+        pd.Series([thresh_B] * len(test_data), index=test_data.index),
+        test_data
+    )
+
 def main():
     parser = argparse.ArgumentParser(description="Stock AI MVP Pipeline using real data and LLM")
     parser.add_argument("--symbol", type=str, default="AAPL", help="Stock ticker to run MVP for (default: AAPL)")
     parser.add_argument("--sample-size", type=int, default=15, help="Number of articles to run LLM extraction on for demo")
     parser.add_argument("--use-llm-all", action="store_true", help="If set, calls the LLM for all articles (takes longer)")
+    parser.add_argument("--no-walkforward", action="store_true", help="If set, disables walk-forward retraining and runs single train-test split")
+    parser.add_argument("--tuning-trials", type=int, default=30, help="Number of Optuna trials for hyperparameter tuning (default: 30)")
     args = parser.parse_args()
     
     symbol = args.symbol.upper()
@@ -472,6 +993,9 @@ def main():
         extracted_df.to_csv(local_extracted_path, index=False)
         logger.info(f"Saved extracted news features to {local_extracted_path}")
         
+    # Apply relevance filter before Phase 3 daily aggregation
+    extracted_df = filter_relevant_news(extracted_df, symbol)
+        
     # ----------------------------------------------------
     # Phase 3: Daily Aggregation
     # ----------------------------------------------------
@@ -512,6 +1036,25 @@ def main():
     # Combine market features and news features
     dataset = market_features.join(daily_news, how='left')
     
+    # Fetch and merge cross-asset features
+    cross_df = fetch_cross_asset_data(symbol, start_date_market, end_date_market)
+    if not cross_df.empty:
+        dataset = dataset.join(cross_df, how='left')
+        if symbol == "NIFTY":
+            dataset['usdinr_level'] = dataset['usdinr_level'].ffill().bfill().fillna(0.0)
+            dataset['usdinr_change_5d'] = dataset['usdinr_change_5d'].ffill().bfill().fillna(0.0)
+        else:
+            for col in ['vix_level', 'vix_change_5d', 'dxy_level', 'dxy_change_5d']:
+                if col in dataset.columns:
+                    dataset[col] = dataset[col].ffill().bfill().fillna(0.0)
+    
+    # Add Calendar features
+    dataset['day_of_week'] = dataset.index.dayofweek
+    dataset['month'] = dataset.index.month
+    dataset['quarter'] = dataset.index.quarter
+    dataset['is_month_start'] = dataset.index.is_month_start.astype(int)
+    dataset['is_month_end'] = dataset.index.is_month_end.astype(int)
+    
     # Fill dates with NO news with neutral values
     dataset['avg_sentiment'] = dataset['avg_sentiment'].fillna(0.0)
     dataset['weighted_sentiment'] = dataset['weighted_sentiment'].fillna(0.0)
@@ -537,9 +1080,6 @@ def main():
     # Phase 5: Target Variable Definition (5-day future return direction)
     # ----------------------------------------------------
     logger.info("--- Phase 5: Target Variable ---")
-    # future_return = Close(t+5) - Close(t)
-    # Target = 1 if future_return > 0 else 0
-    # Note: shift(-5) on daily data shifts future close to today's row (computed on full market data to avoid NaNs at the end of the news range)
     dataset['future_close'] = dataset['close'].shift(-5)
     dataset['future_return'] = dataset['future_close'] - dataset['close']
     dataset['target'] = (dataset['future_return'] > 0).astype(int)
@@ -550,22 +1090,33 @@ def main():
     dataset = dataset.loc[news_start_date:news_end_date]
     logger.info(f"Combined dataset spans {len(dataset)} trading days (from {dataset.index.min().date()} to {dataset.index.max().date()}).")
     
-    # Drop the last 5 rows if they don't have future returns (which will be at the end of our fetched market data range)
+    # Drop the last 5 rows if they don't have future returns
     cleaned_dataset = dataset.dropna(subset=['future_close'])
     logger.info(f"Cleaned dataset for ML contains {len(cleaned_dataset)} rows after lookahead drop.")
     
     # ----------------------------------------------------
-    # Phase 6: Training
+    # Phase 6 & 7: Model Training & Evaluation
     # ----------------------------------------------------
-    logger.info("--- Phase 6: Training ---")
+    logger.info("--- Phase 6 & 7: Model Training & Evaluation ---")
     
     technical_cols = [
         'rsi', 'macd', 'macd_signal', 'macd_hist', 
         'dist_sma_20', 'dist_sma_50', 'dist_ema_20', 
         'dist_bb_upper', 'dist_bb_lower', 'volume_ratio', 'daily_return',
-        'daily_return_lag1'
+        'daily_return_lag1',
+        'atr_ratio', 'adx', 'stoch_k', 'stoch_d', 'obv_z', 'roc_5', 'roc_10', 'roc_20', 'volatility_20d',
+        'day_of_week', 'month', 'quarter', 'is_month_start', 'is_month_end'
     ]
     
+    # Append cross-asset columns if they were successfully fetched and merged
+    if symbol == "NIFTY":
+        if 'usdinr_level' in cleaned_dataset.columns:
+            technical_cols.extend(['usdinr_level', 'usdinr_change_5d'])
+    else:
+        for col in ['vix_level', 'vix_change_5d', 'dxy_level', 'dxy_change_5d']:
+            if col in cleaned_dataset.columns:
+                technical_cols.append(col)
+                
     news_cols = [
         'avg_sentiment', 'weighted_sentiment', 'max_importance', 'bull_avg', 'bear_avg', 'risk_avg',
         'partnership_count', 'lawsuit_count', 'earnings_count',
@@ -573,137 +1124,46 @@ def main():
         'avg_sentiment_roll3', 'avg_sentiment_lag1', 'weighted_sentiment_lag1'
     ]
     
-    # Split by dates: Train 2023-2024, Test 2025
-    train_split_end = pd.Timestamp("2024-12-31")
+    run_optuna = True
     
-    train_data = cleaned_dataset.loc[:train_split_end]
-    test_data = cleaned_dataset.loc[train_split_end + pd.Timedelta(days=1):]
-    
-    logger.info(f"Train split (2023-2024): {len(train_data)} trading days")
-    logger.info(f"Test split (2025): {len(test_data)} trading days")
-    
-    if len(test_data) == 0:
-        logger.error("Test dataset is empty. Check dates!")
-        return
+    if args.no_walkforward:
+        logger.info("Running single train-test split (Train: 2023-2024, Test: 2025+)...")
+        probas_A, probas_B, thresholds_A, thresholds_B, test_data = run_single_split(
+            cleaned_dataset, technical_cols, news_cols, 'target', run_optuna=run_optuna, n_trials=args.tuning_trials
+        )
+        train_data = cleaned_dataset.loc[:pd.Timestamp("2024-12-31")]
+    else:
+        logger.info("Running quarterly walk-forward retraining...")
+        probas_A, probas_B, thresholds_A, thresholds_B, test_data = run_walk_forward(
+            cleaned_dataset, technical_cols, news_cols, 'target', run_optuna=run_optuna, n_trials=args.tuning_trials
+        )
+        train_data = cleaned_dataset.iloc[:252] # First year as initial train window
         
-    X_train_A = train_data[technical_cols]
-    y_train = train_data['target']
-    X_test_A = test_data[technical_cols]
     y_test = test_data['target']
     
-    X_train_B = train_data[technical_cols + news_cols]
-    X_test_B = test_data[technical_cols + news_cols]
+    # Binary predictions for metrics comparison
+    preds_A = (probas_A >= thresholds_A).astype(int)
+    preds_B = (probas_B >= thresholds_B).astype(int)
     
-    # Calculate scale_pos_weight
-    num_neg = np.sum(y_train == 0)
-    num_pos = np.sum(y_train == 1)
-    scale_pos_weight = num_neg / num_pos if num_pos > 0 else 1.0
+    acc_A = accuracy_score(y_test, preds_A)
+    prec_A = precision_score(y_test, preds_A, zero_division=0)
+    rec_A = recall_score(y_test, preds_A, zero_division=0)
+    f1_A = f1_score(y_test, preds_A, zero_division=0)
+    roc_auc_A = roc_auc_score(y_test, probas_A)
     
-    # Optimized XGBClassifier parameters to prevent overfitting on smaller sample
-    params = {
-        'max_depth': 3,
-        'n_estimators': 300,
-        'learning_rate': 0.05,
-        'subsample': 0.8,
-        'colsample_bytree': 0.8,
-        'reg_lambda': 2.0,
-        'scale_pos_weight': scale_pos_weight,
-        'random_state': 42,
-        'eval_metric': 'logloss',
-        'use_label_encoder': False
-    }
+    acc_B = accuracy_score(y_test, preds_B)
+    prec_B = precision_score(y_test, preds_B, zero_division=0)
+    rec_B = recall_score(y_test, preds_B, zero_division=0)
+    f1_B = f1_score(y_test, preds_B, zero_division=0)
+    roc_auc_B = roc_auc_score(y_test, probas_B)
     
-    # Threshold tuning helper function using 5-fold TimeSeriesSplit on Train set to maximize strategy returns
-    def get_best_threshold(X_tr, y_tr, base_params):
-        from sklearn.model_selection import TimeSeriesSplit
-        tscv = TimeSeriesSplit(n_splits=5)
-        oof_probas = np.zeros(len(X_tr))
-        oof_mask = np.zeros(len(X_tr), dtype=bool)
-        
-        for train_cv_idx, val_cv_idx in tscv.split(X_tr):
-            X_fold_tr, X_fold_val = X_tr.iloc[train_cv_idx], X_tr.iloc[val_cv_idx]
-            y_fold_tr, y_fold_val = y_tr.iloc[train_cv_idx], y_tr.iloc[val_cv_idx]
-            
-            num_fold_neg = np.sum(y_fold_tr == 0)
-            num_fold_pos = np.sum(y_fold_tr == 1)
-            fold_spw = num_fold_neg / num_fold_pos if num_fold_pos > 0 else 1.0
-            
-            fold_params = base_params.copy()
-            fold_params['scale_pos_weight'] = fold_spw
-            
-            fold_clf = XGBClassifier(**fold_params)
-            fold_clf.fit(X_fold_tr, y_fold_tr, verbose=False)
-            
-            val_proba = fold_clf.predict_proba(X_fold_val)[:, 1]
-            oof_probas[val_cv_idx] = val_proba
-            oof_mask[val_cv_idx] = True
-            
-        oof_p = oof_probas[oof_mask]
-        oof_daily_ret = train_data['daily_return'].iloc[oof_mask]
-        
-        best_t = 0.50
-        best_oof_ret = -999.0
-        
-        for t in np.linspace(0.40, 0.70, 61):
-            preds = (oof_p >= t).astype(int)
-            sig = pd.Series(preds, index=oof_daily_ret.index).shift(1).fillna(0)
-            ret = sig * oof_daily_ret
-            cum_ret = (1 + ret).cumprod() - 1
-            net_ret = cum_ret.iloc[-1] if len(cum_ret) > 0 else -999.0
-            
-            if np.sum(preds) >= 10:
-                if net_ret > best_oof_ret:
-                    best_oof_ret = net_ret
-                    best_t = t
-        return float(best_t)
-        
-    logger.info("Tuning prediction thresholds on training set using Out-of-Fold cross-validation...")
-    thresh_A = get_best_threshold(X_train_A, y_train, params)
-    thresh_B = get_best_threshold(X_train_B, y_train, params)
-    logger.info(f"Optimal Thresholds found - Model A: {thresh_A:.3f}, Model B: {thresh_B:.3f}")
+    # Calculate position sizes
+    sizes_A = compute_position_sizes(probas_A, thresholds_A)
+    sizes_B = compute_position_sizes(probas_B, thresholds_B)
     
-    # Model A: Technical Indicators Only
-    logger.info("Training Model A (Technical Indicators Only)...")
-    model_A = XGBClassifier(**params)
-    model_A.fit(X_train_A, y_train)
-    
-    # Model B: Technical Indicators + News Features
-    logger.info("Training Model B (Technical Indicators + News Features)...")
-    model_B = XGBClassifier(**params)
-    model_B.fit(X_train_B, y_train)
-    
-    # ----------------------------------------------------
-    # Phase 7: Evaluation
-    # ----------------------------------------------------
-    logger.info("--- Phase 7: Evaluation ---")
-    
-    def evaluate(model, X_test, y_test, threshold=0.50):
-        probas = model.predict_proba(X_test)[:, 1]
-        preds = (probas >= threshold).astype(int)
-        
-        acc = accuracy_score(y_test, preds)
-        prec = precision_score(y_test, preds, zero_division=0)
-        rec = recall_score(y_test, preds, zero_division=0)
-        f1 = f1_score(y_test, preds, zero_division=0)
-        roc_auc = roc_auc_score(y_test, probas)
-        cm = confusion_matrix(y_test, preds)
-        
-        return {
-            "accuracy": acc,
-            "precision": prec,
-            "recall": rec,
-            "f1": f1,
-            "roc_auc": roc_auc,
-            "confusion_matrix": cm,
-            "preds": preds
-        }
-        
-    results_A = evaluate(model_A, X_test_A, y_test, threshold=thresh_A)
-    results_B = evaluate(model_B, X_test_B, y_test, threshold=thresh_B)
-    
-    # Calculate daily strategy returns
-    sig_A = pd.Series(results_A['preds'], index=test_data.index).shift(1).fillna(0)
-    sig_B = pd.Series(results_B['preds'], index=test_data.index).shift(1).fillna(0)
+    # Strategy returns (shifted by 1 day)
+    sig_A = sizes_A.shift(1).fillna(0)
+    sig_B = sizes_B.shift(1).fillna(0)
     
     daily_ret = test_data['daily_return']
     ret_A = sig_A * daily_ret
@@ -713,34 +1173,49 @@ def main():
     cum_A = (1 + ret_A).cumprod() - 1
     cum_B = (1 + ret_B).cumprod() - 1
     
-    # Convert to percentages
-    bh_net = float(cum_bh.iloc[-1] * 100)
-    A_net = float(cum_A.iloc[-1] * 100)
-    B_net = float(cum_B.iloc[-1] * 100)
+    bh_net = float(cum_bh.iloc[-1] * 100) if len(cum_bh) > 0 else 0.0
+    A_net = float(cum_A.iloc[-1] * 100) if len(cum_A) > 0 else 0.0
+    B_net = float(cum_B.iloc[-1] * 100) if len(cum_B) > 0 else 0.0
+    
+    # Sharpe & Max Drawdowns
+    sharpe_A = calculate_sharpe_ratio(ret_A)
+    sharpe_B = calculate_sharpe_ratio(ret_B)
+    max_dd_A = calculate_max_drawdown(cum_A)
+    max_dd_B = calculate_max_drawdown(cum_B)
+    
+    longs_A = int((sig_A > 0.01).sum())
+    shorts_A = int((sig_A < -0.01).sum())
+    longs_B = int((sig_B > 0.01).sum())
+    shorts_B = int((sig_B < -0.01).sum())
     
     # Print Comparison Table
     print("\n========================================================")
     print(f"                STOCK AI MVP EVALUATION REPORT: {symbol} ")
     print("========================================================")
     print(f"Target Symbol:       {symbol} (Daily)")
+    print(f"Method:              {'Walk-Forward Retraining' if not args.no_walkforward else 'Single Split'}")
     print(f"Train Period:        {train_data.index.min().date()} to {train_data.index.max().date()}")
     print(f"Test Period:         {test_data.index.min().date()} to {test_data.index.max().date()}")
     print(f"Target:              1 if Price rises over next 5 trading days, else 0")
     print("--------------------------------------------------------")
-    print(f"{'Metric':<20} | {'Model A (Tech Only)':<20} | {'Model B (Tech+News)':<20}")
-    print(f"{'-'*20}-+-{'-'*20}-+-{'-'*20}")
+    print(f"{'Metric':<25} | {'Model A (Tech Only)':<20} | {'Model B (Tech+News)':<20}")
+    print(f"{'-'*25}-+-{'-'*20}-+-{'-'*20}")
     
-    print(f"{'Accuracy':<20} | {results_A['accuracy']:<20.4f} | {results_B['accuracy']:<20.4f}")
-    print(f"{'Precision':<20} | {results_A['precision']:<20.4f} | {results_B['precision']:<20.4f}")
-    print(f"{'Recall':<20} | {results_A['recall']:<20.4f} | {results_B['recall']:<20.4f}")
-    print(f"{'F1 Score':<20} | {results_A['f1']:<20.4f} | {results_B['f1']:<20.4f}")
-    print(f"{'ROC AUC':<20} | {results_A['roc_auc']:<20.4f} | {results_B['roc_auc']:<20.4f}")
+    print(f"{'Accuracy':<25} | {acc_A:<20.4f} | {acc_B:<20.4f}")
+    print(f"{'Precision':<25} | {prec_A:<20.4f} | {prec_B:<20.4f}")
+    print(f"{'Recall':<25} | {rec_A:<20.4f} | {rec_B:<20.4f}")
+    print(f"{'F1 Score':<25} | {f1_A:<20.4f} | {f1_B:<20.4f}")
+    print(f"{'ROC AUC':<25} | {roc_auc_A:<20.4f} | {roc_auc_B:<20.4f}")
     print("--------------------------------------------------------")
-    print(f"{'Strategy Net Return':<20} | {A_net:<20.2f}% | {B_net:<20.2f}%")
-    print(f"{'Buy & Hold Return':<20} | {bh_net:<20.2f}% | {bh_net:<20.2f}%")
+    print(f"{'Long Trades Count':<25} | {longs_A:<20} | {longs_B:<20}")
+    print(f"{'Short Trades Count':<25} | {shorts_A:<20} | {shorts_B:<20}")
+    print(f"{'Sharpe Ratio':<25} | {sharpe_A:<20.4f} | {sharpe_B:<20.4f}")
+    print(f"{'Max Drawdown':<25} | {max_dd_A:<19.2f}% | {max_dd_B:<19.2f}%")
+    print(f"{'Strategy Net Return':<25} | {A_net:<19.2f}% | {B_net:<19.2f}%")
+    print(f"{'Buy & Hold Return':<25} | {bh_net:<19.2f}% | {bh_net:<19.2f}%")
     print("--------------------------------------------------------")
     
-    improvement = results_B['accuracy'] - results_A['accuracy']
+    improvement = acc_B - acc_A
     improvement_pct = improvement * 100
     
     print(f"Accuracy Improvement (Model B - Model A): {improvement_pct:+.2f}%")
@@ -756,21 +1231,29 @@ def main():
     ax1.plot(test_data.index, cum_A * 100, label='Model A (Tech Only)', color='#e74c3c', linewidth=2.0)
     ax1.plot(test_data.index, cum_B * 100, label='Model B (Tech + News)', color='#2ecc71', linewidth=2.5)
     ax1.set_ylabel('Cumulative Return (%)', fontsize=11, fontweight='bold')
-    ax1.set_title(f'{symbol} Strategy Cumulative Returns Comparison (Out-of-Sample 2025)', fontsize=14, fontweight='bold', pad=15)
+    ax1.set_title(f'{symbol} Strategy Cumulative Returns Comparison (Out-of-Sample)', fontsize=14, fontweight='bold', pad=15)
     ax1.grid(True, linestyle=':', alpha=0.6)
     ax1.legend(loc='upper left', fontsize=10)
     ax1.set_facecolor('#fcfcfc')
     
-    # Bottom Panel: Close Price & Buy Signal Markers
+    # Bottom Panel: Close Price & Long/Short Signal Markers
     ax2.plot(test_data.index, test_data['close'], color='#2c3e50', linewidth=1.5, label=f'{symbol} Close Price')
     
-    buy_dates_A = test_data.index[results_A['preds'] == 1]
-    buy_prices_A = test_data.loc[buy_dates_A, 'close']
-    buy_dates_B = test_data.index[results_B['preds'] == 1]
-    buy_prices_B = test_data.loc[buy_dates_B, 'close']
+    long_dates_A = test_data.index[sig_A > 0.01]
+    long_prices_A = test_data.loc[long_dates_A, 'close']
+    short_dates_A = test_data.index[sig_A < -0.01]
+    short_prices_A = test_data.loc[short_dates_A, 'close']
     
-    ax2.scatter(buy_dates_A, buy_prices_A, marker='^', color='#e74c3c', s=80, label='Model A Buy Signal', zorder=5)
-    ax2.scatter(buy_dates_B, buy_prices_B, marker='o', edgecolors='#27ae60', facecolors='none', s=120, linewidths=2.0, label='Model B Buy Signal', zorder=6)
+    long_dates_B = test_data.index[sig_B > 0.01]
+    long_prices_B = test_data.loc[long_dates_B, 'close']
+    short_dates_B = test_data.index[sig_B < -0.01]
+    short_prices_B = test_data.loc[short_dates_B, 'close']
+    
+    ax2.scatter(long_dates_A, long_prices_A, marker='^', color='#e74c3c', s=80, label='Model A Long Signal', zorder=5)
+    ax2.scatter(short_dates_A, short_prices_A, marker='v', color='#962d22', s=80, label='Model A Short Signal', zorder=5)
+    
+    ax2.scatter(long_dates_B, long_prices_B, marker='o', edgecolors='#27ae60', facecolors='none', s=120, linewidths=2.0, label='Model B Long Signal', zorder=6)
+    ax2.scatter(short_dates_B, short_prices_B, marker='s', edgecolors='#f39c12', facecolors='none', s=100, linewidths=2.0, label='Model B Short Signal', zorder=6)
     
     ax2.set_ylabel('Asset Price', fontsize=11, fontweight='bold')
     ax2.set_xlabel('Date', fontsize=11, fontweight='bold')
@@ -793,16 +1276,24 @@ def main():
         "train_end": str(train_data.index.max().date()),
         "test_start": str(test_data.index.min().date()),
         "test_end": str(test_data.index.max().date()),
-        "A_accuracy": float(results_A['accuracy']),
-        "A_precision": float(results_A['precision']),
-        "A_recall": float(results_A['recall']),
-        "A_f1": float(results_A['f1']),
-        "A_roc_auc": float(results_A['roc_auc']),
-        "B_accuracy": float(results_B['accuracy']),
-        "B_precision": float(results_B['precision']),
-        "B_recall": float(results_B['recall']),
-        "B_f1": float(results_B['f1']),
-        "B_roc_auc": float(results_B['roc_auc']),
+        "A_accuracy": float(acc_A),
+        "A_precision": float(prec_A),
+        "A_recall": float(rec_A),
+        "A_f1": float(f1_A),
+        "A_roc_auc": float(roc_auc_A),
+        "A_sharpe": float(sharpe_A),
+        "A_max_dd": float(max_dd_A),
+        "A_longs_count": int(longs_A),
+        "A_shorts_count": int(shorts_A),
+        "B_accuracy": float(acc_B),
+        "B_precision": float(prec_B),
+        "B_recall": float(rec_B),
+        "B_f1": float(f1_B),
+        "B_roc_auc": float(roc_auc_B),
+        "B_sharpe": float(sharpe_B),
+        "B_max_dd": float(max_dd_B),
+        "B_longs_count": int(longs_B),
+        "B_shorts_count": int(shorts_B),
         "bh_net_return_pct": bh_net,
         "A_net_return_pct": A_net,
         "B_net_return_pct": B_net
