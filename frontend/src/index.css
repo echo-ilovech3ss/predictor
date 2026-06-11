@@ -1,0 +1,18 @@
+/* Global base resets */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #09090b;
+  color: #f8fafc;
+  min-height: 100vh;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+* {
+  box-sizing: border-box;
+}
