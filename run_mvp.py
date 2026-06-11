@@ -120,6 +120,65 @@ def download_news_data(symbol: str) -> pd.DataFrame:
             return df
         return pd.DataFrame()
 
+def scrape_latest_news(symbol: str) -> pd.DataFrame:
+    """Scrape the latest 3 days of news headlines for a symbol from Google News RSS."""
+    import xml.etree.ElementTree as ET
+    import urllib.parse
+    import urllib.request
+    
+    logger.info(f"Scraping latest news headlines for {symbol} from Google News RSS...")
+    
+    # Define search query
+    query_map = {
+        "NIFTY": "Nifty 50 OR Nifty",
+        "AAPL": "Apple OR AAPL",
+        "NVDA": "Nvidia OR NVDA",
+        "TSLA": "Tesla OR TSLA",
+        "MSFT": "Microsoft OR MSFT",
+        "SPY": "SPY ETF OR S&P 500"
+    }
+    search_term = query_map.get(symbol, symbol)
+    
+    # Search last 3 days
+    today = datetime.date.today()
+    start_date = today - datetime.timedelta(days=3)
+    
+    query = f"{search_term} after:{start_date.strftime('%Y-%m-%d')}"
+    encoded_query = urllib.parse.quote(query)
+    
+    if symbol == "NIFTY":
+        url = f"https://news.google.com/rss/search?q={encoded_query}&hl=en-IN&gl=IN&ceid=IN:en"
+    else:
+        url = f"https://news.google.com/rss/search?q={encoded_query}&hl=en-US&gl=US&ceid=US:en"
+        
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+    req = urllib.request.Request(url, headers=headers)
+    
+    articles = []
+    try:
+        with urllib.request.urlopen(req, timeout=10) as response:
+            xml_data = response.read()
+            root = ET.fromstring(xml_data)
+            items = root.findall('.//item')
+            for item in items:
+                title = item.find('title').text
+                pub_date = item.find('pubDate').text
+                try:
+                    dt = pd.to_datetime(pub_date)
+                    date_str = dt.strftime("%Y-%m-%d")
+                except Exception:
+                    date_str = pub_date
+                articles.append({"Date": date_str, "Title": title})
+    except Exception as e:
+        logger.error(f"Error scraping latest news RSS for {symbol}: {e}")
+        
+    df = pd.DataFrame(articles)
+    if not df.empty:
+        logger.info(f"Scraped {len(df)} latest news articles for {symbol}.")
+    return df
+
 def filter_relevant_news(news_df: pd.DataFrame, symbol: str) -> pd.DataFrame:
     """Filter out news headlines that are irrelevant to the target asset."""
     if news_df.empty:
@@ -903,6 +962,21 @@ def main():
     # Try reading real news data from cache/download
     news_df = download_news_data(symbol)
     
+    # Scrape the latest news of today and merge it with our dataset
+    latest_news = scrape_latest_news(symbol)
+    if not latest_news.empty:
+        if not news_df.empty:
+            news_df['Date'] = pd.to_datetime(news_df['Date']).dt.tz_localize(None).dt.normalize()
+            latest_news['Date'] = pd.to_datetime(latest_news['Date']).dt.tz_localize(None).dt.normalize()
+            combined_news = pd.concat([news_df, latest_news], ignore_index=True)
+            combined_news = combined_news.drop_duplicates(subset=['Title']).sort_values('Date').reset_index(drop=True)
+            logger.info(f"Merged latest scraped news. Total headlines count: {len(combined_news)} (added {len(combined_news) - len(news_df)} new articles)")
+            news_df = combined_news
+        else:
+            news_df = latest_news
+        # Save back to cache
+        news_df.to_csv(os.path.join(DATA_CACHE_DIR, f"{symbol.lower()}_news_raw.csv"), index=False)
+        
     # If not found (not AAPL or first run of new symbol), we download market data first and generate news
     if news_df.empty:
         # Fetch 2 years of daily data (from Jan 2023 onwards)
@@ -930,15 +1004,37 @@ def main():
     extractor = NewsExtractor()
     
     local_extracted_path = os.path.join(DATA_CACHE_DIR, f"{symbol.lower()}_news_extracted.csv")
-    processed_news_list = []
     
     if os.path.exists(local_extracted_path) and not args.use_llm_all:
         logger.info(f"Loading cached extracted news features from {local_extracted_path}")
         extracted_df = pd.read_csv(local_extracted_path)
         extracted_df['Date'] = pd.to_datetime(extracted_df['Date'], utc=True).dt.tz_localize(None)
-    else:
-        logger.info(f"Running extraction on {len(news_df)} headlines...")
         
+        # Check for new headlines to perform incremental extraction
+        existing_titles = set(extracted_df['Title'].values)
+        missing_news = news_df[~news_df['Title'].isin(existing_titles)]
+        
+        if not missing_news.empty:
+            logger.info(f"Found {len(missing_news)} new headlines. Running incremental feature extraction...")
+            new_features_list = []
+            for idx, row in missing_news.iterrows():
+                title = row['Title']
+                date = row['Date']
+                try:
+                    features = extractor.extract_features_heuristic(title)
+                except Exception:
+                    features = extractor.extract_features_heuristic(title)
+                features['Title'] = title
+                features['Date'] = date
+                new_features_list.append(features)
+                
+            new_features_df = pd.DataFrame(new_features_list)
+            extracted_df = pd.concat([extracted_df, new_features_df], ignore_index=True)
+            extracted_df.to_csv(local_extracted_path, index=False)
+            logger.info(f"Appended new feature extractions and saved cache to {local_extracted_path}")
+    else:
+        logger.info(f"Running full extraction on {len(news_df)} headlines...")
+        processed_news_list = []
         # 1. Demo LLM Extraction on sample size
         demo_count = min(args.sample_size, len(news_df))
         logger.info(f"Demonstrating actual DeepSeek-v4-flash-free LLM extraction on {demo_count} sample articles:")
@@ -1300,6 +1396,75 @@ def main():
     }
     update_mvp_results(symbol, results_summary)
     rebuild_walkthrough_report()
+
+    # ----------------------------------------------------
+    # Phase 8: Live Prediction
+    # ----------------------------------------------------
+    logger.info("--- Phase 8: Live Prediction ---")
+    
+    # Get latest features (last row in dataset, which has no future return label)
+    latest_row = dataset.iloc[[-1]]
+    latest_date = latest_row.index[0].date()
+    latest_close = float(latest_row['close'].iloc[0])
+    
+    logger.info(f"Generating live prediction for {symbol} on {latest_date} (Close: {latest_close:.2f})...")
+    
+    # Train the final ensemble model on the full cleaned_dataset (Model B: Tech + News)
+    try:
+        final_ensemble = MarketEnsemble(xgb_p_B, lgb_p_B, cb_p_B)
+    except NameError:
+        xgb_p_B = {'max_depth': 3, 'learning_rate': 0.05, 'n_estimators': 300, 'subsample': 0.8, 'colsample_bytree': 0.8, 'reg_lambda': 2.0}
+        lgb_p_B = {'max_depth': 3, 'num_leaves': 7, 'learning_rate': 0.05, 'n_estimators': 300, 'subsample': 0.8, 'colsample_bytree': 0.8, 'reg_lambda': 2.0, 'verbose': -1}
+        cb_p_B = {'depth': 3, 'learning_rate': 0.05, 'iterations': 300, 'subsample': 0.8, 'l2_leaf_reg': 2.0, 'verbose': 0}
+        final_ensemble = MarketEnsemble(xgb_p_B, lgb_p_B, cb_p_B)
+        
+    X_train_final = cleaned_dataset[technical_cols + news_cols]
+    y_train_final = cleaned_dataset['target']
+    
+    final_ensemble.fit(X_train_final, y_train_final)
+    
+    # Predict probability for latest row
+    X_pred_latest = latest_row[technical_cols + news_cols]
+    prob_up = float(final_ensemble.predict_proba(X_pred_latest)[0])
+    prob_down = 1.0 - prob_up
+    
+    # Use the latest tuned threshold for Model B
+    current_threshold = float(thresholds_B.iloc[-1]) if len(thresholds_B) > 0 else 0.55
+    
+    # Compute position size
+    if prob_up >= current_threshold:
+        action = "BUY (LONG)"
+        pos_size = min(1.0, (prob_up - current_threshold) / (1.0 - current_threshold) * 2.0)
+    elif prob_up < (1.0 - current_threshold):
+        action = "SELL (SHORT)"
+        pos_size = -min(1.0, ((1.0 - prob_up) - current_threshold) / (1.0 - current_threshold) * 2.0)
+    else:
+        action = "HOLD (NEUTRAL)"
+        pos_size = 0.0
+        
+    # Get today's headlines for display
+    today_news_df = news_df[news_df['Date'].dt.date == latest_date]
+    today_headlines = today_news_df['Title'].tolist()[:5] # Show top 5 headlines
+    
+    print("\n========================================================")
+    print(f"         LIVE MARKET PREDICTION FOR {symbol} ")
+    print("========================================================")
+    print(f"Prediction Date:     {latest_date}")
+    print(f"Latest Close Price:  {latest_close:.2f}")
+    print(f"Current Threshold:   {current_threshold:.3f}")
+    print("--------------------------------------------------------")
+    print(f"Probability UP:      {prob_up:.2%}")
+    print(f"Probability DOWN:    {prob_down:.2%}")
+    print(f"Recommended Action:  {action}")
+    print(f"Position Size:       {pos_size:+.2f}")
+    print("--------------------------------------------------------")
+    print("Today's News Headlines:")
+    if today_headlines:
+        for idx, headline in enumerate(today_headlines):
+            print(f"  {idx+1}. {headline}")
+    else:
+        print("  No whitelisted headlines found for today.")
+    print("========================================================\n")
 
 if __name__ == "__main__":
     main()
