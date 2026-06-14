@@ -16,7 +16,7 @@ DATA_CACHE_DIR = "data_cache"
 if not os.path.exists(DATA_CACHE_DIR):
     os.makedirs(DATA_CACHE_DIR)
 
-ARTIFACT_DIR = "/Users/arunmehta/.gemini/antigravity/brain/f7b90d3f-b23d-4ea0-8898-305d806e2758"
+ARTIFACT_DIR = os.environ.get("ANTIGRAVITY_ARTIFACT_DIR", os.path.join(os.getcwd(), "artifacts"))
 if not os.path.exists(ARTIFACT_DIR):
     os.makedirs(ARTIFACT_DIR)
 
