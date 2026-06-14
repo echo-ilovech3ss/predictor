@@ -93,7 +93,7 @@ export default function App() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/data/${symbol.toLowerCase()}.json`);
+      const response = await fetch(`/data/${symbol.toLowerCase()}.json?t=${Date.now()}`);
       if (!response.ok) {
         throw new Error('NOT_FOUND');
       }
