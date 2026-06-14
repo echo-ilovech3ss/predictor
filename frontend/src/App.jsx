@@ -107,14 +107,6 @@ export default function App() {
       // Synchronize input fields with loaded settings
       setHorizonInput(jsonData.horizon || 5);
       setIntervalInput(jsonData.interval || '1d');
-
-      // If prediction cache is outdated, auto-trigger training to fetch fresh data
-      if (isCacheOutdated(jsonData)) {
-        console.log(`[Vite Frontend] Outdated cache for ${symbol}. Auto-refreshing in background...`);
-        setTimeout(() => {
-          handleStartTraining(symbol, jsonData.horizon || 5, jsonData.interval || '1d');
-        }, 100);
-      }
     } catch (err) {
       console.error(err);
       setError(err.message === 'NOT_FOUND' ? 'NOT_FOUND' : 'FAILED_TO_LOAD');
