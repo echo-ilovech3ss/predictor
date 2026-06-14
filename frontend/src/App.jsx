@@ -130,9 +130,9 @@ export default function App() {
 
   // Call the Vite proxy API to retrain, with optional custom parameters
   const handleStartTraining = async (optSymbol, optHorizon, optInterval) => {
-    const symbol = optSymbol || targetSymbol;
-    const horizon = optHorizon !== undefined ? optHorizon : horizonInput;
-    const interval = optInterval || intervalInput;
+    const symbol = (typeof optSymbol === 'string') ? optSymbol : targetSymbol;
+    const horizon = (typeof optHorizon === 'number' || typeof optHorizon === 'string') ? optHorizon : horizonInput;
+    const interval = (typeof optInterval === 'string') ? optInterval : intervalInput;
 
     setIsTraining(true);
     setTrainingError(null);
