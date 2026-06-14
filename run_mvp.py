@@ -412,6 +412,29 @@ def generate_synthetic_news_data(symbol: str, market_df: pd.DataFrame, horizon: 
     return df
 
 
+def get_next_market_candle(curr_date, delta, is_nifty):
+    next_time = curr_date + delta
+    
+    if is_nifty:
+        open_h, open_m = 9, 15
+        close_h, close_m = 15, 30
+    else:
+        open_h, open_m = 9, 30
+        close_h, close_m = 16, 0
+        
+    close_time = next_time.replace(hour=close_h, minute=close_m, second=0, microsecond=0)
+    
+    if next_time > close_time:
+        next_time = next_time + datetime.timedelta(days=1)
+        next_time = next_time.replace(hour=open_h, minute=open_m, second=0, microsecond=0)
+        
+    while next_time.weekday() >= 5:
+        next_time += datetime.timedelta(days=1)
+        next_time = next_time.replace(hour=open_h, minute=open_m, second=0, microsecond=0)
+        
+    return next_time
+
+
 def fetch_market_data(symbol: str, start_date: str, end_date: str, interval: str = "1d") -> pd.DataFrame:
     """Fetch stock price data from Yahoo Finance at a specific interval."""
     import yfinance as yf
@@ -1809,17 +1832,14 @@ def main():
     else: # "1d"
         delta = datetime.timedelta(days=1)
         
+    is_nifty = "NIFTY" in symbol.upper() or "^NSEI" in symbol.upper() or symbol.upper().endswith(".NS")
     while len(future_dates) < args.horizon + 1:
-        curr_date += delta
-        # For daily/weekly, skip weekends
         if args.interval in ["1d", "1wk"]:
+            curr_date += delta
             if curr_date.weekday() >= 5:
                 continue
-        # For intraday, skip weekends
         else:
-            if curr_date.weekday() >= 5:
-                while curr_date.weekday() >= 5:
-                    curr_date += datetime.timedelta(days=1)
+            curr_date = get_next_market_candle(curr_date, delta, is_nifty)
         future_dates.append(curr_date)
             
     # Format dates based on interval (show time for intraday)

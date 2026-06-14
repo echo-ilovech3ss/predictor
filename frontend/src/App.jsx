@@ -88,6 +88,9 @@ export default function App() {
   // Determine active target symbol based on custom input or select dropdown
   const targetSymbol = isCustomMode ? (customSymbolInput.trim().toUpperCase() || 'CUSTOM') : selectedSymbol;
 
+  const isIndian = targetSymbol.toLowerCase().includes('nifty') || targetSymbol.toLowerCase().includes('nsei') || targetSymbol.toLowerCase().endsWith('.ns');
+  const currencySymbol = isIndian ? '₹' : '$';
+
   const loadData = async (symbol) => {
     if (!symbol) return;
     setLoading(true);
@@ -235,6 +238,25 @@ export default function App() {
 
     // Add future predictions (connecting first pred value to the last actual value)
     const lastHistIndex = chartData.length - 1;
+    
+    let r_sma20 = lastHistIndex >= 0 ? chartData[lastHistIndex].sma_20 : null;
+    let r_sma50 = lastHistIndex >= 0 ? chartData[lastHistIndex].sma_50 : null;
+    let r_ema20 = lastHistIndex >= 0 ? chartData[lastHistIndex].ema_20 : null;
+    let r_ema50 = lastHistIndex >= 0 ? chartData[lastHistIndex].ema_50 : null;
+    let r_ema200 = lastHistIndex >= 0 ? chartData[lastHistIndex].ema_200 : null;
+    let r_bb_upper = lastHistIndex >= 0 ? chartData[lastHistIndex].bb_upper : null;
+    let r_bb_lower = lastHistIndex >= 0 ? chartData[lastHistIndex].bb_lower : null;
+    
+    let r_rsi = lastHistIndex >= 0 ? chartData[lastHistIndex].rsi : null;
+    let r_mfi = lastHistIndex >= 0 ? chartData[lastHistIndex].mfi : null;
+    let r_williams_r = lastHistIndex >= 0 ? chartData[lastHistIndex].williams_r : null;
+    let r_cci = lastHistIndex >= 0 ? chartData[lastHistIndex].cci : null;
+    let r_macd = lastHistIndex >= 0 ? chartData[lastHistIndex].macd : null;
+    let r_macd_signal = lastHistIndex >= 0 ? chartData[lastHistIndex].macd_signal : null;
+    let r_macd_hist = lastHistIndex >= 0 ? chartData[lastHistIndex].macd_hist : null;
+    
+    const bb_width = (r_bb_upper !== null && r_bb_lower !== null) ? (r_bb_upper - r_bb_lower) : 0;
+
     pred.predicted_path_dates.forEach((date, i) => {
       const price = pred.predicted_path_prices[i];
       if (i === 0) {
@@ -242,10 +264,45 @@ export default function App() {
           chartData[lastHistIndex].predicted = price;
         }
       } else {
+        if (price !== null && price !== undefined) {
+          if (r_ema20 !== null) r_ema20 = price * (2 / 21) + r_ema20 * (1 - 2 / 21);
+          if (r_ema50 !== null) r_ema50 = price * (2 / 51) + r_ema50 * (1 - 2 / 51);
+          if (r_ema200 !== null) r_ema200 = price * (2 / 201) + r_ema200 * (1 - 2 / 201);
+          if (r_sma20 !== null) r_sma20 = price * (2 / 21) + r_sma20 * (1 - 2 / 21);
+          if (r_sma50 !== null) r_sma50 = price * (2 / 51) + r_sma50 * (1 - 2 / 51);
+          
+          if (r_sma20 !== null && bb_width > 0) {
+            r_bb_upper = r_sma20 + bb_width / 2;
+            r_bb_lower = r_sma20 - bb_width / 2;
+          }
+          
+          if (r_rsi !== null) r_rsi = r_rsi * 0.85 + 50 * 0.15;
+          if (r_mfi !== null) r_mfi = r_mfi * 0.85 + 50 * 0.15;
+          if (r_williams_r !== null) r_williams_r = r_williams_r * 0.85 - 50 * 0.15;
+          if (r_cci !== null) r_cci = r_cci * 0.85;
+          if (r_macd !== null) r_macd = r_macd * 0.85;
+          if (r_macd_signal !== null) r_macd_signal = r_macd_signal * 0.85;
+          r_macd_hist = (r_macd !== null && r_macd_signal !== null) ? (r_macd - r_macd_signal) : null;
+        }
+        
         chartData.push({
           date: date,
           actual: null,
-          predicted: price
+          predicted: price,
+          sma_20: r_sma20,
+          sma_50: r_sma50,
+          ema_20: r_ema20,
+          ema_50: r_ema50,
+          ema_200: r_ema200,
+          bb_upper: r_bb_upper,
+          bb_lower: r_bb_lower,
+          rsi: r_rsi,
+          mfi: r_mfi,
+          williams_r: r_williams_r,
+          cci: r_cci,
+          macd: r_macd,
+          macd_signal: r_macd_signal,
+          macd_hist: r_macd_hist
         });
       }
     });
@@ -671,7 +728,7 @@ export default function App() {
                       </div>
                       <div className="stat-item">
                         <span className="card-label">Latest Close</span>
-                        <div className="stat-val">${formatValue(data.live_prediction.close)}</div>
+                        <div className="stat-val">{currencySymbol}{formatValue(data.live_prediction.close)}</div>
                       </div>
                       <div className="stat-item">
                         <span className="card-label">Hold Duration</span>
@@ -728,9 +785,9 @@ export default function App() {
                               fontSize: '13px'
                             }}
                             formatter={(value, name) => {
-                              if (name === 'actual') return [`$${value.toFixed(2)}`, 'Close Price'];
-                              if (name === 'predicted') return [`$${value.toFixed(2)}`, 'Predicted'];
-                              return [`$${value.toFixed(2)}`, name];
+                              if (name === 'actual') return [`${currencySymbol}${value.toFixed(2)}`, 'Close Price'];
+                              if (name === 'predicted') return [`${currencySymbol}${value.toFixed(2)}`, 'Predicted'];
+                              return [`${currencySymbol}${value.toFixed(2)}`, name];
                             }}
                           />
                           <Line 
@@ -854,7 +911,7 @@ export default function App() {
                                     `Candle +${i}`)}
                                 </td>
                                 <td>{date}</td>
-                                <td style={{ fontWeight: 600 }}>${price.toFixed(2)}</td>
+                                <td style={{ fontWeight: 600 }}>{currencySymbol}{price.toFixed(2)}</td>
                                 <td style={{ 
                                   color: pctChange > 0.01 ? 'var(--c-buy)' : pctChange < -0.01 ? 'var(--c-sell)' : 'var(--c-text-primary)',
                                   fontWeight: 600
