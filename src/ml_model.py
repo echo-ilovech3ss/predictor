@@ -12,6 +12,16 @@ MODEL_DIR = "models"
 if not os.path.exists(MODEL_DIR):
     os.makedirs(MODEL_DIR)
 
+def check_cuda_availability():
+    try:
+        from xgboost import XGBClassifier
+        XGBClassifier(device="cuda", n_estimators=1).fit(np.array([[1]]), np.array([1]))
+        return "cuda"
+    except Exception:
+        return "cpu"
+
+XGB_DEVICE = check_cuda_availability()
+
 class MarketMLModel:
     """Handles training, saving, loading, and predicting using a regularized XGBoost model."""
     
@@ -69,7 +79,8 @@ class MarketMLModel:
                 scale_pos_weight=1.0,
                 random_state=42,
                 n_jobs=-1,
-                eval_metric='logloss'
+                eval_metric='logloss',
+                device=XGB_DEVICE
             )
             fold_clf.fit(X_tr_scaled, y_tr)
             
@@ -111,7 +122,8 @@ class MarketMLModel:
             scale_pos_weight=1.0,
             random_state=42,
             n_jobs=-1,
-            eval_metric='logloss'
+            eval_metric='logloss',
+            device=XGB_DEVICE
         )
         self.model.fit(X_train_scaled, y_train)
         

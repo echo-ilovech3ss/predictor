@@ -1,6 +1,11 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { exec } from 'child_process'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Custom plugin to handle model training requests
 function trainingServerPlugin() {
@@ -21,9 +26,19 @@ function trainingServerPlugin() {
             'Cache-Control': 'no-cache' 
           });
           
+          // Resolve python path inside virtual environment
+          let pythonCmd = 'python';
+          const venvWin = path.join(__dirname, '..', 'venv', 'Scripts', 'python.exe');
+          const venvUnix = path.join(__dirname, '..', 'venv', 'bin', 'python');
+          if (fs.existsSync(venvWin)) {
+            pythonCmd = `.\\venv\\Scripts\\python.exe`;
+          } else if (fs.existsSync(venvUnix)) {
+            pythonCmd = `./venv/bin/python`;
+          }
+          
           // Build the exact python run command
           const wfFlag = noWalkforward === 'true' ? '--no-walkforward' : '';
-          const command = `python run_mvp.py --symbol ${symbol} --horizon ${horizon} --interval ${interval} --tuning-trials ${trials} ${wfFlag}`;
+          const command = `${pythonCmd} run_mvp.py --symbol ${symbol} --horizon ${horizon} --interval ${interval} --tuning-trials ${trials} ${wfFlag}`;
           
           console.log(`[Vite Backend] Running training command: ${command}`);
           

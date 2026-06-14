@@ -21,3 +21,6 @@ scratch/generate_plots.py
 # Local presentation outputs
 walkthrough.md
 *_trades_comparison.png
+
+# CatBoost temp files
+catboost_info/

@@ -1,12 +1,12 @@
 /* Core Design System Tokens */
 :root {
-  --bg-gradient: radial-gradient(circle at top, #1e1b4b 0%, #09090b 100%);
-  --panel-bg: rgba(18, 18, 26, 0.75);
+  --bg-gradient: radial-gradient(circle at top, #0f172a 0%, #020617 100%);
+  --panel-bg: rgba(15, 23, 42, 0.8);
   --panel-border: rgba(255, 255, 255, 0.08);
   --panel-blur: blur(16px);
-  --panel-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  --panel-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
   
-  --primary-glow: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0) 70%);
+  --primary-glow: radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, rgba(14, 165, 233, 0) 70%);
   
   /* HSL Tailored Colors */
   --c-text-primary: #f8fafc;
@@ -17,18 +17,18 @@
   --c-buy-bg: rgba(16, 185, 129, 0.1);
   --c-buy-border: rgba(16, 185, 129, 0.3);
   
-  --c-sell: #f43f5e;
-  --c-sell-bg: rgba(244, 63, 94, 0.1);
-  --c-sell-border: rgba(244, 63, 94, 0.3);
+  --c-sell: #ef4444;
+  --c-sell-bg: rgba(239, 68, 68, 0.1);
+  --c-sell-border: rgba(239, 68, 68, 0.3);
   
   --c-neutral: #64748b;
   --c-neutral-bg: rgba(100, 116, 139, 0.1);
   --c-neutral-border: rgba(100, 116, 139, 0.3);
   
-  --c-accent: #6366f1;
-  --c-accent-hover: #4f46e5;
-  --c-accent-bg: rgba(99, 102, 241, 0.1);
-  --c-accent-border: rgba(99, 102, 241, 0.3);
+  --c-accent: #0ea5e9;
+  --c-accent-hover: #0284c7;
+  --c-accent-bg: rgba(14, 165, 233, 0.1);
+  --c-accent-border: rgba(14, 165, 233, 0.3);
 }
 
 /* Global App Styling Override */
@@ -62,7 +62,7 @@
   right: 10%;
   width: 700px;
   height: 700px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, rgba(0,0,0,0) 70%);
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.08) 0%, rgba(0,0,0,0) 70%);
   z-index: 0;
   pointer-events: none;
 }

@@ -25,7 +25,8 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend
+  Legend,
+  ReferenceLine
 } from 'recharts';
 import './App.css';
 
@@ -73,6 +74,16 @@ export default function App() {
   const [isTraining, setIsTraining] = useState(false);
   const [trainingStatus, setTrainingStatus] = useState('');
   const [trainingError, setTrainingError] = useState(null);
+
+  // Technical Indicators States
+  const [showIndicators, setShowIndicators] = useState(false);
+  const [showSma20, setShowSma20] = useState(false);
+  const [showSma50, setShowSma50] = useState(false);
+  const [showEma20, setShowEma20] = useState(false);
+  const [showEma50, setShowEma50] = useState(false);
+  const [showEma200, setShowEma200] = useState(false);
+  const [showBb, setShowBb] = useState(false);
+  const [selectedOscillator, setSelectedOscillator] = useState('none');
 
   // Determine active target symbol based on custom input or select dropdown
   const targetSymbol = isCustomMode ? (customSymbolInput.trim().toUpperCase() || 'CUSTOM') : selectedSymbol;
@@ -212,7 +223,21 @@ export default function App() {
       chartData.push({
         date: date,
         actual: pred.actual_history_prices[i],
-        predicted: null
+        predicted: null,
+        sma_20: pred.history_sma20 ? pred.history_sma20[i] : null,
+        sma_50: pred.history_sma50 ? pred.history_sma50[i] : null,
+        ema_20: pred.history_ema20 ? pred.history_ema20[i] : null,
+        ema_50: pred.history_ema50 ? pred.history_ema50[i] : null,
+        ema_200: pred.history_ema200 ? pred.history_ema200[i] : null,
+        bb_upper: pred.history_bb_upper ? pred.history_bb_upper[i] : null,
+        bb_lower: pred.history_bb_lower ? pred.history_bb_lower[i] : null,
+        rsi: pred.history_rsi ? pred.history_rsi[i] : null,
+        macd: pred.history_macd ? pred.history_macd[i] : null,
+        macd_signal: pred.history_macd_signal ? pred.history_macd_signal[i] : null,
+        macd_hist: pred.history_macd_hist ? pred.history_macd_hist[i] : null,
+        cci: pred.history_cci ? pred.history_cci[i] : null,
+        williams_r: pred.history_williams_r ? pred.history_williams_r[i] : null,
+        mfi: pred.history_mfi ? pred.history_mfi[i] : null
       });
     });
 
@@ -410,6 +435,75 @@ export default function App() {
                 {copied ? 'Copied Command!' : 'Copy CLI Command'}
               </button>
             </div>
+          </div>
+
+          <div className="glass-panel" style={{ marginTop: '16px', textAlign: 'left' }}>
+            <h3 className="sidebar-title" style={{ margin: '0 0 12px 0' }}>Trader Tools</h3>
+            
+            <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+              <input 
+                type="checkbox" 
+                id="toggle-indicators" 
+                checked={showIndicators} 
+                onChange={(e) => setShowIndicators(e.target.checked)}
+                style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+              />
+              <label htmlFor="toggle-indicators" className="form-label" style={{ margin: 0, cursor: 'pointer', fontWeight: 'bold' }}>
+                Enable Advanced Analysis
+              </label>
+            </div>
+            
+            {showIndicators && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '8px', borderLeft: '2px solid var(--c-accent-border)' }}>
+                <h4 style={{ margin: '8px 0 4px 0', fontSize: '11px', textTransform: 'uppercase', color: 'var(--c-text-secondary)' }}>Overlays (On Price)</h4>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <input type="checkbox" id="show-sma20" checked={showSma20} onChange={(e) => setShowSma20(e.target.checked)} />
+                  <label htmlFor="show-sma20" style={{ fontSize: '12px', cursor: 'pointer' }}>SMA (20)</label>
+                </div>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <input type="checkbox" id="show-sma50" checked={showSma50} onChange={(e) => setShowSma50(e.target.checked)} />
+                  <label htmlFor="show-sma50" style={{ fontSize: '12px', cursor: 'pointer' }}>SMA (50)</label>
+                </div>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <input type="checkbox" id="show-ema20" checked={showEma20} onChange={(e) => setShowEma20(e.target.checked)} />
+                  <label htmlFor="show-ema20" style={{ fontSize: '12px', cursor: 'pointer' }}>EMA (20)</label>
+                </div>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <input type="checkbox" id="show-ema50" checked={showEma50} onChange={(e) => setShowEma50(e.target.checked)} />
+                  <label htmlFor="show-ema50" style={{ fontSize: '12px', cursor: 'pointer' }}>EMA (50)</label>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <input type="checkbox" id="show-ema200" checked={showEma200} onChange={(e) => setShowEma200(e.target.checked)} />
+                  <label htmlFor="show-ema200" style={{ fontSize: '12px', cursor: 'pointer' }}>EMA (200)</label>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <input type="checkbox" id="show-bb" checked={showBb} onChange={(e) => setShowBb(e.target.checked)} />
+                  <label htmlFor="show-bb" style={{ fontSize: '12px', cursor: 'pointer' }}>Bollinger Bands</label>
+                </div>
+                
+                <h4 style={{ margin: '12px 0 4px 0', fontSize: '11px', textTransform: 'uppercase', color: 'var(--c-text-secondary)' }}>Oscillators (Sub-Charts)</h4>
+                
+                <select 
+                  className="select-input"
+                  value={selectedOscillator}
+                  onChange={(e) => setSelectedOscillator(e.target.value)}
+                  style={{ padding: '6px', fontSize: '12px', width: '100%' }}
+                >
+                  <option value="none">None</option>
+                  <option value="rsi">RSI (Relative Strength)</option>
+                  <option value="macd">MACD (Trend Momentum)</option>
+                  <option value="cci">CCI (Commodity Channel)</option>
+                  <option value="mfi">MFI (Money Flow Volume)</option>
+                  <option value="williams_r">Williams %R</option>
+                </select>
+              </div>
+            )}
           </div>
 
           <div className="glass-panel" style={{ fontSize: '12px', color: 'var(--c-text-secondary)' }}>
@@ -641,7 +735,11 @@ export default function App() {
                               color: '#fff',
                               fontSize: '13px'
                             }}
-                            formatter={(value) => [`$${value.toFixed(2)}`, 'Close Price']}
+                            formatter={(value, name) => {
+                              if (name === 'actual') return [`$${value.toFixed(2)}`, 'Close Price'];
+                              if (name === 'predicted') return [`$${value.toFixed(2)}`, 'Predicted'];
+                              return [`$${value.toFixed(2)}`, name];
+                            }}
                           />
                           <Line 
                             type="monotone" 
@@ -660,9 +758,83 @@ export default function App() {
                             dot={{ r: 3 }}
                             activeDot={{ r: 6 }}
                           />
+                          {showIndicators && showSma20 && (
+                            <Line type="monotone" dataKey="sma_20" stroke="#0ea5e9" strokeWidth={1.5} dot={false} name="SMA (20)" />
+                          )}
+                          {showIndicators && showSma50 && (
+                            <Line type="monotone" dataKey="sma_50" stroke="#f59e0b" strokeWidth={1.5} dot={false} name="SMA (50)" />
+                          )}
+                          {showIndicators && showEma20 && (
+                            <Line type="monotone" dataKey="ema_20" stroke="#a855f7" strokeWidth={1.5} dot={false} name="EMA (20)" />
+                          )}
+                          {showIndicators && showEma50 && (
+                            <Line type="monotone" dataKey="ema_50" stroke="#ec4899" strokeWidth={1.5} dot={false} name="EMA (50)" />
+                          )}
+                          {showIndicators && showEma200 && (
+                            <Line type="monotone" dataKey="ema_200" stroke="#ef4444" strokeWidth={1.5} dot={false} name="EMA (200)" />
+                          )}
+                          {showIndicators && showBb && (
+                            <Line type="monotone" dataKey="bb_upper" stroke="#64748b" strokeWidth={1.2} strokeDasharray="4 4" dot={false} name="BB Upper" />
+                          )}
+                          {showIndicators && showBb && (
+                            <Line type="monotone" dataKey="bb_lower" stroke="#64748b" strokeWidth={1.2} strokeDasharray="4 4" dot={false} name="BB Lower" />
+                          )}
                         </ComposedChart>
                       </ResponsiveContainer>
                     </div>
+
+                    {showIndicators && selectedOscillator !== 'none' && (
+                      <div className="chart-container" style={{ height: '170px', marginTop: '16px', borderTop: '1px dashed var(--panel-border)', paddingTop: '16px' }}>
+                        <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--c-text-secondary)', margin: '0 0 8px 0', textAlign: 'left', fontWeight: 'bold' }}>
+                          {selectedOscillator.toUpperCase()} Oscillator
+                        </h4>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={getTrajectoryData().filter(d => d.actual !== null)} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" />
+                            <XAxis dataKey="date" stroke="var(--c-text-muted)" fontSize={9} tickLine={false} />
+                            <YAxis stroke="var(--c-text-muted)" fontSize={9} tickLine={false} domain={selectedOscillator === 'rsi' || selectedOscillator === 'mfi' ? [0, 100] : selectedOscillator === 'williams_r' ? [-100, 0] : ['auto', 'auto']} />
+                            <Tooltip 
+                              contentStyle={{ background: 'rgba(15, 15, 25, 0.9)', border: '1px solid var(--panel-border)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                              formatter={(value) => [value.toFixed(2), '']}
+                            />
+                            {selectedOscillator === 'rsi' && (
+                              <>
+                                <Line type="monotone" dataKey="rsi" stroke="#10b981" strokeWidth={1.5} dot={false} />
+                                <ReferenceLine y={70} stroke="#ef4444" strokeDasharray="3 3" label={{ value: '70', fill: '#ef4444', fontSize: 8, position: 'right' }} />
+                                <ReferenceLine y={30} stroke="#10b981" strokeDasharray="3 3" label={{ value: '30', fill: '#10b981', fontSize: 8, position: 'right' }} />
+                              </>
+                            )}
+                            {selectedOscillator === 'mfi' && (
+                              <>
+                                <Line type="monotone" dataKey="mfi" stroke="#0ea5e9" strokeWidth={1.5} dot={false} />
+                                <ReferenceLine y={80} stroke="#ef4444" strokeDasharray="3 3" label={{ value: '80', fill: '#ef4444', fontSize: 8, position: 'right' }} />
+                                <ReferenceLine y={20} stroke="#10b981" strokeDasharray="3 3" label={{ value: '20', fill: '#10b981', fontSize: 8, position: 'right' }} />
+                              </>
+                            )}
+                            {selectedOscillator === 'williams_r' && (
+                              <>
+                                <Line type="monotone" dataKey="williams_r" stroke="#ec4899" strokeWidth={1.5} dot={false} />
+                                <ReferenceLine y={-20} stroke="#ef4444" strokeDasharray="3 3" label={{ value: '-20', fill: '#ef4444', fontSize: 8, position: 'right' }} />
+                                <ReferenceLine y={-80} stroke="#10b981" strokeDasharray="3 3" label={{ value: '-80', fill: '#10b981', fontSize: 8, position: 'right' }} />
+                              </>
+                            )}
+                            {selectedOscillator === 'cci' && (
+                              <>
+                                <Line type="monotone" dataKey="cci" stroke="#f59e0b" strokeWidth={1.5} dot={false} />
+                                <ReferenceLine y={100} stroke="#ef4444" strokeDasharray="3 3" label={{ value: '100', fill: '#ef4444', fontSize: 8, position: 'right' }} />
+                                <ReferenceLine y={-100} stroke="#10b981" strokeDasharray="3 3" label={{ value: '-100', fill: '#10b981', fontSize: 8, position: 'right' }} />
+                              </>
+                            )}
+                            {selectedOscillator === 'macd' && (
+                              <>
+                                <Line type="monotone" dataKey="macd" stroke="#0ea5e9" strokeWidth={1.5} dot={false} name="MACD" />
+                                <Line type="monotone" dataKey="macd_signal" stroke="#f59e0b" strokeWidth={1.2} dot={false} name="Signal" />
+                              </>
+                            )}
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    )}
 
                     {/* Path Table */}
                     <div className="custom-table-container">

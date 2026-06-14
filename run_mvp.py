@@ -16,7 +16,7 @@ DATA_CACHE_DIR = "data_cache"
 if not os.path.exists(DATA_CACHE_DIR):
     os.makedirs(DATA_CACHE_DIR)
 
-ARTIFACT_DIR = os.environ.get("ANTIGRAVITY_ARTIFACT_DIR", os.path.join(os.getcwd(), "artifacts"))
+ARTIFACT_DIR = os.environ.get("PREDICTOR_ARTIFACT_DIR", os.path.join(os.getcwd(), "artifacts"))
 if not os.path.exists(ARTIFACT_DIR):
     os.makedirs(ARTIFACT_DIR)
 
@@ -522,6 +522,33 @@ def calculate_daily_indicators(df: pd.DataFrame) -> pd.DataFrame:
     daily_ret = data['close'].pct_change().fillna(0)
     data['volatility_20d'] = daily_ret.rolling(window=20).std().fillna(0)
     
+    # 13. Additional EMAs
+    data['ema_50'] = data['close'].ewm(span=50, adjust=False).mean()
+    data['ema_200'] = data['close'].ewm(span=200, adjust=False).mean()
+    
+    # 14. CCI (Commodity Channel Index)
+    tp = (data['high'] + data['low'] + data['close']) / 3.0
+    sma_tp = tp.rolling(window=14).mean()
+    mad_tp = tp.rolling(window=14).apply(lambda x: np.abs(x - x.mean()).mean(), raw=True)
+    data['cci'] = (tp - sma_tp) / (0.015 * mad_tp.replace(0, np.nan))
+    data['cci'] = data['cci'].fillna(0.0)
+    
+    # 15. Williams %R
+    r_range = (high_14 - low_14).replace(0, np.nan)
+    data['williams_r'] = -100 * (high_14 - data['close']) / r_range
+    data['williams_r'] = data['williams_r'].fillna(-50.0)
+    
+    # 16. MFI (Money Flow Index)
+    raw_money_flow = tp * data['volume']
+    tp_diff = tp.diff()
+    pos_mf = np.where(tp_diff > 0, raw_money_flow, 0.0)
+    neg_mf = np.where(tp_diff < 0, raw_money_flow, 0.0)
+    pos_mf_14 = pd.Series(pos_mf, index=data.index).rolling(window=14).sum()
+    neg_mf_14 = pd.Series(neg_mf, index=data.index).rolling(window=14).sum()
+    m_ratio = pos_mf_14 / neg_mf_14.replace(0, np.nan)
+    data['mfi'] = 100 - (100 / (1 + m_ratio))
+    data['mfi'] = data['mfi'].fillna(50.0)
+
     # Create final technical features
     features = pd.DataFrame(index=data.index)
     features['close'] = data['close']
@@ -552,6 +579,23 @@ def calculate_daily_indicators(df: pd.DataFrame) -> pd.DataFrame:
     features['roc_10'] = data['roc_10']
     features['roc_20'] = data['roc_20']
     features['volatility_20d'] = data['volatility_20d']
+    
+    # New indicators for ML modeling:
+    features['dist_ema_50'] = (data['close'] - data['ema_50']) / data['ema_50']
+    features['dist_ema_200'] = (data['close'] - data['ema_200']) / data['ema_200']
+    features['cci'] = data['cci']
+    features['williams_r'] = data['williams_r']
+    features['mfi'] = data['mfi']
+    
+    # Absolute values for UI visualization (not used in ML features list):
+    features['sma_20'] = data['sma_20']
+    features['sma_50'] = data['sma_50']
+    features['ema_20'] = data['ema_20']
+    features['ema_50'] = data['ema_50']
+    features['ema_200'] = data['ema_200']
+    features['bb_upper'] = data['bb_upper']
+    features['bb_lower'] = data['bb_lower']
+    features['atr'] = data['atr']
     
     # Fill any remaining NaNs with 0
     features = features.fillna(0)
@@ -659,6 +703,41 @@ We implemented several optimizations and formatting updates to make training fas
         f.write(md)
     logger.info(f"Walkthrough dashboard successfully rebuilt at {walkthrough_path}")
 
+_cuda_devices = None
+def get_cuda_devices():
+    global _cuda_devices
+    if _cuda_devices is not None:
+        return _cuda_devices
+    
+    _cuda_devices = {"xgb": "cpu", "lgb": "cpu", "cb": "CPU"}
+    import numpy as np
+    X = np.random.rand(10, 2)
+    y = np.random.randint(0, 2, 10)
+    
+    try:
+        from xgboost import XGBClassifier
+        XGBClassifier(device="cuda", n_estimators=1).fit(X, y)
+        _cuda_devices["xgb"] = "cuda"
+    except Exception:
+        pass
+        
+    try:
+        from lightgbm import LGBMClassifier
+        LGBMClassifier(device_type="gpu", n_estimators=1).fit(X, y)
+        _cuda_devices["lgb"] = "gpu"
+    except Exception:
+        pass
+        
+    try:
+        from catboost import CatBoostClassifier
+        CatBoostClassifier(task_type="GPU", iterations=1, verbose=0).fit(X, y)
+        _cuda_devices["cb"] = "GPU"
+    except Exception:
+        pass
+        
+    logger.info(f"CUDA devices detected: {_cuda_devices}")
+    return _cuda_devices
+
 class MarketEnsemble:
     """An equal-weight ensemble of XGBoost, LightGBM, and CatBoost."""
     def __init__(self, xgb_params=None, lgb_params=None, cb_params=None):
@@ -685,6 +764,9 @@ class MarketEnsemble:
         if 'random_state' not in xgb_p: xgb_p['random_state'] = 42
         if 'eval_metric' not in xgb_p: xgb_p['eval_metric'] = 'logloss'
         if 'use_label_encoder' not in xgb_p: xgb_p['use_label_encoder'] = False
+        cuda_dev = get_cuda_devices()
+        if cuda_dev["xgb"] == "cuda":
+            xgb_p['device'] = 'cuda'
         self.xgb = XGBClassifier(**xgb_p)
         self.xgb.fit(X, y, verbose=False)
         
@@ -693,6 +775,8 @@ class MarketEnsemble:
         lgb_p['scale_pos_weight'] = spw
         if 'random_state' not in lgb_p: lgb_p['random_state'] = 42
         if 'verbose' not in lgb_p: lgb_p['verbose'] = -1
+        if cuda_dev["lgb"] == "gpu":
+            lgb_p['device_type'] = 'gpu'
         self.lgb = LGBMClassifier(**lgb_p)
         self.lgb.fit(X, y)
         
@@ -701,6 +785,8 @@ class MarketEnsemble:
         cb_p['scale_pos_weight'] = spw
         if 'random_seed' not in cb_p: cb_p['random_seed'] = 42
         if 'verbose' not in cb_p: cb_p['verbose'] = 0
+        if cuda_dev["cb"] == "GPU":
+            cb_p['task_type'] = 'GPU'
         self.cb = CatBoostClassifier(**cb_p)
         self.cb.fit(X, y)
         
@@ -728,18 +814,25 @@ class MarketEnsembleRegressor:
         
         xgb_p = self.xgb_params.copy()
         if 'random_state' not in xgb_p: xgb_p['random_state'] = 42
+        cuda_dev = get_cuda_devices()
+        if cuda_dev["xgb"] == "cuda":
+            xgb_p['device'] = 'cuda'
         self.xgb = XGBRegressor(**xgb_p)
         self.xgb.fit(X, y, verbose=False)
         
         lgb_p = self.lgb_params.copy()
         if 'random_state' not in lgb_p: lgb_p['random_state'] = 42
         if 'verbose' not in lgb_p: lgb_p['verbose'] = -1
+        if cuda_dev["lgb"] == "gpu":
+            lgb_p['device_type'] = 'gpu'
         self.lgb = LGBMRegressor(**lgb_p)
         self.lgb.fit(X, y)
         
         cb_p = self.cb_params.copy()
         if 'random_seed' not in cb_p: cb_p['random_seed'] = 42
         if 'verbose' not in cb_p: cb_p['verbose'] = 0
+        if cuda_dev["cb"] == "GPU":
+            cb_p['task_type'] = 'GPU'
         self.cb = CatBoostRegressor(**cb_p)
         self.cb.fit(X, y)
         
@@ -790,6 +883,7 @@ def tune_ensemble_hyperparameters(X_tr, y_tr, train_returns, n_trials=30):
             'learning_rate': learning_rate,
             'iterations': n_estimators,
             'subsample': subsample,
+            'bootstrap_type': 'Bernoulli',
             'l2_leaf_reg': reg_lambda,
             'random_seed': 42,
             'verbose': 0
@@ -989,7 +1083,7 @@ def run_walk_forward(cleaned_dataset, technical_cols, news_cols, target_col, run
     else:
         xgb_p_A = xgb_p_B = {'max_depth': 3, 'learning_rate': 0.05, 'n_estimators': 300, 'subsample': 0.8, 'colsample_bytree': 0.8, 'reg_lambda': 2.0}
         lgb_p_A = lgb_p_B = {'max_depth': 3, 'num_leaves': 7, 'learning_rate': 0.05, 'n_estimators': 300, 'subsample': 0.8, 'colsample_bytree': 0.8, 'reg_lambda': 2.0, 'verbose': -1}
-        cb_p_A = cb_p_B = {'depth': 3, 'learning_rate': 0.05, 'iterations': 300, 'subsample': 0.8, 'l2_leaf_reg': 2.0, 'verbose': 0}
+        cb_p_A = cb_p_B = {'depth': 3, 'learning_rate': 0.05, 'iterations': 300, 'subsample': 0.8, 'bootstrap_type': 'Bernoulli', 'l2_leaf_reg': 2.0, 'verbose': 0}
         
     for i in range(initial_train_size, n_samples, retrain_every):
         train_data = cleaned_dataset.iloc[:i]
@@ -1058,7 +1152,7 @@ def run_single_split(cleaned_dataset, technical_cols, news_cols, target_col, run
     else:
         xgb_p_A = xgb_p_B = {'max_depth': 3, 'learning_rate': 0.05, 'n_estimators': 300, 'subsample': 0.8, 'colsample_bytree': 0.8, 'reg_lambda': 2.0}
         lgb_p_A = lgb_p_B = {'max_depth': 3, 'num_leaves': 7, 'learning_rate': 0.05, 'n_estimators': 300, 'subsample': 0.8, 'colsample_bytree': 0.8, 'reg_lambda': 2.0, 'verbose': -1}
-        cb_p_A = cb_p_B = {'depth': 3, 'learning_rate': 0.05, 'iterations': 300, 'subsample': 0.8, 'l2_leaf_reg': 2.0, 'verbose': 0}
+        cb_p_A = cb_p_B = {'depth': 3, 'learning_rate': 0.05, 'iterations': 300, 'subsample': 0.8, 'bootstrap_type': 'Bernoulli', 'l2_leaf_reg': 2.0, 'verbose': 0}
         
     thresh_A = get_best_threshold_ensemble(X_train_A, y_train, train_data['daily_return'], xgb_p_A, lgb_p_A, cb_p_A)
     thresh_B = get_best_threshold_ensemble(X_train_B, y_train, train_data['daily_return'], xgb_p_B, lgb_p_B, cb_p_B)
@@ -1276,8 +1370,17 @@ def main():
     # ----------------------------------------------------
     logger.info("--- Phase 4: Dataset Creation ---")
     
-    # Align indexes as localized/timezone-naive dates
-    market_features.index = pd.to_datetime(market_features.index, utc=True).tz_localize(None)
+    # Align indexes as localized/timezone-naive dates matching exchange local clock hours
+    import pytz
+    s_upper = symbol.upper()
+    tz_name = "Asia/Kolkata" if ("NIFTY" in s_upper or "^NSEI" in s_upper or s_upper.endswith(".NS")) else "America/New_York"
+    target_tz = pytz.timezone(tz_name)
+    
+    index_dt = pd.to_datetime(market_features.index)
+    if index_dt.tz is None:
+        index_dt = index_dt.tz_localize(pytz.UTC)
+    market_features.index = index_dt.tz_convert(target_tz).tz_localize(None)
+    
     daily_news.index = pd.to_datetime(daily_news.index, utc=True).tz_localize(None).normalize()
     
     # Combine market features and news features matching by date
@@ -1376,7 +1479,8 @@ def main():
         'dist_bb_upper', 'dist_bb_lower', 'volume_ratio', 'daily_return',
         'daily_return_lag1',
         'atr_ratio', 'adx', 'stoch_k', 'stoch_d', 'obv_z', 'roc_5', 'roc_10', 'roc_20', 'volatility_20d',
-        'day_of_week', 'month', 'quarter', 'is_month_start', 'is_month_end'
+        'day_of_week', 'month', 'quarter', 'is_month_start', 'is_month_end',
+        'dist_ema_50', 'dist_ema_200', 'cci', 'williams_r', 'mfi'
     ]
     
     # Append cross-asset columns if they were successfully fetched and merged
@@ -1597,7 +1701,7 @@ def main():
     except NameError:
         xgb_p_B = {'max_depth': 3, 'learning_rate': 0.05, 'n_estimators': 300, 'subsample': 0.8, 'colsample_bytree': 0.8, 'reg_lambda': 2.0}
         lgb_p_B = {'max_depth': 3, 'num_leaves': 7, 'learning_rate': 0.05, 'n_estimators': 300, 'subsample': 0.8, 'colsample_bytree': 0.8, 'reg_lambda': 2.0, 'verbose': -1}
-        cb_p_B = {'depth': 3, 'learning_rate': 0.05, 'iterations': 300, 'subsample': 0.8, 'l2_leaf_reg': 2.0, 'verbose': 0}
+        cb_p_B = {'depth': 3, 'learning_rate': 0.05, 'iterations': 300, 'subsample': 0.8, 'bootstrap_type': 'Bernoulli', 'l2_leaf_reg': 2.0, 'verbose': 0}
         final_ensemble = MarketEnsemble(xgb_p_B, lgb_p_B, cb_p_B)
         
     X_train_final = cleaned_dataset[technical_cols + news_cols]
@@ -1641,7 +1745,7 @@ def main():
         
         xgb_r_p = {'max_depth': 3, 'learning_rate': 0.05, 'n_estimators': 150, 'subsample': 0.8, 'colsample_bytree': 0.8, 'reg_lambda': 2.0}
         lgb_r_p = {'max_depth': 3, 'num_leaves': 7, 'learning_rate': 0.05, 'n_estimators': 150, 'subsample': 0.8, 'colsample_bytree': 0.8, 'reg_lambda': 2.0, 'verbose': -1}
-        cb_r_p = {'depth': 3, 'learning_rate': 0.05, 'iterations': 150, 'subsample': 0.8, 'l2_leaf_reg': 2.0, 'verbose': 0}
+        cb_r_p = {'depth': 3, 'learning_rate': 0.05, 'iterations': 150, 'subsample': 0.8, 'bootstrap_type': 'Bernoulli', 'l2_leaf_reg': 2.0, 'verbose': 0}
         
         reg_model = MarketEnsembleRegressor(xgb_r_p, lgb_r_p, cb_r_p)
         reg_model.fit(X_tr_d, y_tr_d)
@@ -1773,7 +1877,21 @@ def main():
             "cum_A": cum_A_list,
             "cum_B": cum_B_list,
             "sig_A": sig_A_list,
-            "sig_B": sig_B_list
+            "sig_B": sig_B_list,
+            "sma_20": test_data['sma_20'].fillna(0.0).tolist(),
+            "sma_50": test_data['sma_50'].fillna(0.0).tolist(),
+            "ema_20": test_data['ema_20'].fillna(0.0).tolist(),
+            "ema_50": test_data['ema_50'].fillna(0.0).tolist(),
+            "ema_200": test_data['ema_200'].fillna(0.0).tolist(),
+            "bb_upper": test_data['bb_upper'].fillna(0.0).tolist(),
+            "bb_lower": test_data['bb_lower'].fillna(0.0).tolist(),
+            "rsi": test_data['rsi'].fillna(50.0).tolist(),
+            "macd": test_data['macd'].fillna(0.0).tolist(),
+            "macd_signal": test_data['macd_signal'].fillna(0.0).tolist(),
+            "macd_hist": test_data['macd_hist'].fillna(0.0).tolist(),
+            "cci": test_data['cci'].fillna(0.0).tolist(),
+            "williams_r": test_data['williams_r'].fillna(-50.0).tolist(),
+            "mfi": test_data['mfi'].fillna(50.0).tolist()
         },
         "live_prediction": {
             "date": latest_date.strftime(date_format),
@@ -1787,7 +1905,21 @@ def main():
             "actual_history_prices": history_prices,
             "predicted_path_dates": future_dates_str,
             "predicted_path_prices": predicted_path_prices,
-            "news": today_news_list
+            "news": today_news_list,
+            "history_sma20": history_df['sma_20'].fillna(0.0).tolist(),
+            "history_sma50": history_df['sma_50'].fillna(0.0).tolist(),
+            "history_ema20": history_df['ema_20'].fillna(0.0).tolist(),
+            "history_ema50": history_df['ema_50'].fillna(0.0).tolist(),
+            "history_ema200": history_df['ema_200'].fillna(0.0).tolist(),
+            "history_bb_upper": history_df['bb_upper'].fillna(0.0).tolist(),
+            "history_bb_lower": history_df['bb_lower'].fillna(0.0).tolist(),
+            "history_rsi": history_df['rsi'].fillna(50.0).tolist(),
+            "history_macd": history_df['macd'].fillna(0.0).tolist(),
+            "history_macd_signal": history_df['macd_signal'].fillna(0.0).tolist(),
+            "history_macd_hist": history_df['macd_hist'].fillna(0.0).tolist(),
+            "history_cci": history_df['cci'].fillna(0.0).tolist(),
+            "history_williams_r": history_df['williams_r'].fillna(-50.0).tolist(),
+            "history_mfi": history_df['mfi'].fillna(50.0).tolist()
         }
     }
     
