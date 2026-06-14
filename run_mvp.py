@@ -2,7 +2,9 @@ import os
 import argparse
 import datetime
 import json
+import urllib
 import urllib.request
+import urllib.parse
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -54,7 +56,6 @@ def download_news_data(symbol: str) -> pd.DataFrame:
         if not os.path.exists(local_path):
             logger.info("Local NIFTY news cache empty. Fetching real historical NIFTY news from Google News RSS...")
             import xml.etree.ElementTree as ET
-            import urllib.parse
             import time
             
             start_date = datetime.date(2023, 1, 1)
@@ -117,7 +118,6 @@ def download_news_data(symbol: str) -> pd.DataFrame:
         if not os.path.exists(local_path):
             logger.info(f"Local {symbol} news cache empty. Fetching real historical news from Google News RSS...")
             import xml.etree.ElementTree as ET
-            import urllib.parse
             import time
             
             query_map = {
@@ -190,8 +190,6 @@ def download_news_data(symbol: str) -> pd.DataFrame:
 def scrape_latest_news(symbol: str) -> pd.DataFrame:
     """Scrape the latest 3 days of news headlines for a symbol from Google News RSS."""
     import xml.etree.ElementTree as ET
-    import urllib.parse
-    import urllib.request
     
     logger.info(f"Scraping latest news headlines for {symbol} from Google News RSS...")
     
@@ -758,15 +756,19 @@ class MarketEnsemble:
         num_pos = np.sum(y == 1)
         spw = num_neg / num_pos if num_pos > 0 else 1.0
         
+        cuda_dev = get_cuda_devices()
+        use_gpu = len(X) >= 15000
+        
         # XGBoost
         xgb_p = self.xgb_params.copy()
         xgb_p['scale_pos_weight'] = spw
         if 'random_state' not in xgb_p: xgb_p['random_state'] = 42
         if 'eval_metric' not in xgb_p: xgb_p['eval_metric'] = 'logloss'
         if 'use_label_encoder' not in xgb_p: xgb_p['use_label_encoder'] = False
-        cuda_dev = get_cuda_devices()
-        if cuda_dev["xgb"] == "cuda":
+        if use_gpu and cuda_dev["xgb"] == "cuda":
             xgb_p['device'] = 'cuda'
+        else:
+            xgb_p['device'] = 'cpu'
         self.xgb = XGBClassifier(**xgb_p)
         self.xgb.fit(X, y, verbose=False)
         
@@ -775,8 +777,10 @@ class MarketEnsemble:
         lgb_p['scale_pos_weight'] = spw
         if 'random_state' not in lgb_p: lgb_p['random_state'] = 42
         if 'verbose' not in lgb_p: lgb_p['verbose'] = -1
-        if cuda_dev["lgb"] == "gpu":
+        if use_gpu and cuda_dev["lgb"] == "gpu":
             lgb_p['device_type'] = 'gpu'
+        else:
+            lgb_p['device_type'] = 'cpu'
         self.lgb = LGBMClassifier(**lgb_p)
         self.lgb.fit(X, y)
         
@@ -785,8 +789,10 @@ class MarketEnsemble:
         cb_p['scale_pos_weight'] = spw
         if 'random_seed' not in cb_p: cb_p['random_seed'] = 42
         if 'verbose' not in cb_p: cb_p['verbose'] = 0
-        if cuda_dev["cb"] == "GPU":
+        if use_gpu and cuda_dev["cb"] == "GPU":
             cb_p['task_type'] = 'GPU'
+        else:
+            cb_p['task_type'] = 'CPU'
         self.cb = CatBoostClassifier(**cb_p)
         self.cb.fit(X, y)
         
@@ -812,27 +818,35 @@ class MarketEnsembleRegressor:
         from lightgbm import LGBMRegressor
         from catboost import CatBoostRegressor
         
+        cuda_dev = get_cuda_devices()
+        use_gpu = len(X) >= 15000
+        
         xgb_p = self.xgb_params.copy()
         if 'random_state' not in xgb_p: xgb_p['random_state'] = 42
-        cuda_dev = get_cuda_devices()
-        if cuda_dev["xgb"] == "cuda":
+        if use_gpu and cuda_dev["xgb"] == "cuda":
             xgb_p['device'] = 'cuda'
+        else:
+            xgb_p['device'] = 'cpu'
         self.xgb = XGBRegressor(**xgb_p)
         self.xgb.fit(X, y, verbose=False)
         
         lgb_p = self.lgb_params.copy()
         if 'random_state' not in lgb_p: lgb_p['random_state'] = 42
         if 'verbose' not in lgb_p: lgb_p['verbose'] = -1
-        if cuda_dev["lgb"] == "gpu":
+        if use_gpu and cuda_dev["lgb"] == "gpu":
             lgb_p['device_type'] = 'gpu'
+        else:
+            lgb_p['device_type'] = 'cpu'
         self.lgb = LGBMRegressor(**lgb_p)
         self.lgb.fit(X, y)
         
         cb_p = self.cb_params.copy()
         if 'random_seed' not in cb_p: cb_p['random_seed'] = 42
         if 'verbose' not in cb_p: cb_p['verbose'] = 0
-        if cuda_dev["cb"] == "GPU":
+        if use_gpu and cuda_dev["cb"] == "GPU":
             cb_p['task_type'] = 'GPU'
+        else:
+            cb_p['task_type'] = 'CPU'
         self.cb = CatBoostRegressor(**cb_p)
         self.cb.fit(X, y)
         
