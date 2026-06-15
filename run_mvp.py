@@ -1898,6 +1898,14 @@ def main():
     sig_A_list = sig_A.fillna(0.0).tolist()
     sig_B_list = sig_B.fillna(0.0).tolist()
 
+    # Resolve the exact UTC timestamp of the latest candle to prevent browser/timezone mismatch warnings
+    try:
+        latest_date_localized = target_tz.localize(latest_date)
+        latest_date_utc = latest_date_localized.tz_convert(pytz.UTC)
+        latest_date_utc_str = latest_date_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+    except Exception:
+        latest_date_utc_str = latest_date.strftime('%Y-%m-%dT%H:%M:%SZ')
+
     # Prepare JSON structure
     frontend_run_details = {
         "symbol": symbol,
@@ -1951,6 +1959,7 @@ def main():
         },
         "live_prediction": {
             "date": latest_date.strftime(date_format),
+            "date_utc": latest_date_utc_str,
             "close": latest_close,
             "prob_up": prob_up,
             "prob_down": prob_down,

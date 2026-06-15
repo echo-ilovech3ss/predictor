@@ -209,22 +209,28 @@ export default function App() {
   const isCacheOutdated = (jsonData) => {
     const checkData = jsonData || data;
     if (!checkData || !checkData.live_prediction) return false;
-    const dateStr = checkData.live_prediction.date; // e.g. "2026-06-09 13:45" or "2026-06-08"
     
-    // Parse dateStr as UTC to prevent timezone offset discrepancies
     let predictionTimeUtc;
-    if (dateStr.includes(' ')) {
-      // Intraday format "YYYY-MM-DD HH:mm" -> convert to ISO string as UTC
-      predictionTimeUtc = new Date(dateStr.replace(' ', 'T') + ':00Z');
+    const pred = checkData.live_prediction;
+    
+    if (pred.date_utc) {
+      // Direct UTC timestamp available from backend (robust and timezone-offset immune)
+      predictionTimeUtc = new Date(pred.date_utc);
     } else {
-      // Daily format "YYYY-MM-DD" -> treat as end-of-day UTC to give 24h grace
-      predictionTimeUtc = new Date(dateStr + 'T23:59:59Z');
+      // Fallback naive parsing if date_utc is missing
+      const dateStr = pred.date;
+      if (dateStr.includes(' ')) {
+        predictionTimeUtc = new Date(dateStr.replace(' ', 'T') + ':00Z');
+      } else {
+        predictionTimeUtc = new Date(dateStr + 'T23:59:59Z');
+      }
     }
     
     if (isNaN(predictionTimeUtc.getTime())) return false;
     
     const nowUtc = new Date();
     const diffMs = nowUtc - predictionTimeUtc;
+    const dateStr = pred.date;
     
     // Warning thresholds: 1 hour for intraday, 24 hours for daily/weekly
     if (dateStr.includes(' ')) {
