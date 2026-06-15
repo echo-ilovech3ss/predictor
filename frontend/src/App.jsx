@@ -91,12 +91,28 @@ export default function App() {
   const isIndian = targetSymbol.toLowerCase().includes('nifty') || targetSymbol.toLowerCase().includes('nsei') || targetSymbol.toLowerCase().endsWith('.ns');
   const currencySymbol = isIndian ? '₹' : '$';
 
-  const loadData = async (symbol) => {
+  const loadData = async (symbol, interval) => {
     if (!symbol) return;
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/data/${symbol.toLowerCase()}.json?t=${Date.now()}`);
+      const activeInterval = interval || intervalInput;
+      let response;
+      
+      if (interval) {
+        // Explicit interval requested
+        response = await fetch(`/data/${symbol.toLowerCase()}_${activeInterval.toLowerCase()}.json?t=${Date.now()}`);
+        if (!response.ok) {
+          response = await fetch(`/data/${symbol.toLowerCase()}.json?t=${Date.now()}`);
+        }
+      } else {
+        // Initial symbol load - try main file first
+        response = await fetch(`/data/${symbol.toLowerCase()}.json?t=${Date.now()}`);
+        if (!response.ok) {
+          response = await fetch(`/data/${symbol.toLowerCase()}_${activeInterval.toLowerCase()}.json?t=${Date.now()}`);
+        }
+      }
+      
       if (!response.ok) {
         throw new Error('NOT_FOUND');
       }
@@ -106,6 +122,12 @@ export default function App() {
         throw new Error('NOT_FOUND');
       }
       const jsonData = await response.json();
+      
+      // If specific interval requested, enforce it
+      if (interval && jsonData.interval !== activeInterval) {
+        throw new Error('NOT_FOUND');
+      }
+      
       setData(jsonData);
       // Synchronize input fields with loaded settings
       setHorizonInput(jsonData.horizon || 5);
@@ -120,7 +142,7 @@ export default function App() {
   };
 
   useEffect(() => {
-    loadData(targetSymbol);
+    loadData(targetSymbol, null);
   }, [targetSymbol]);
 
   // Call the Vite proxy API to retrain, with optional custom parameters
@@ -140,7 +162,7 @@ export default function App() {
       
       if (result.success) {
         setTrainingStatus('Training successful! Reloading cache...');
-        await loadData(symbol);
+        await loadData(symbol, interval);
       } else {
         throw new Error(result.error || 'Training failed');
       }
@@ -151,6 +173,11 @@ export default function App() {
       setIsTraining(false);
       setTrainingStatus('');
     }
+  };
+
+  const handleIntervalChange = (newInterval) => {
+    setIntervalInput(newInterval);
+    loadData(targetSymbol, newInterval);
   };
 
   const handleCopyCommand = (command) => {
@@ -421,7 +448,7 @@ export default function App() {
                 className="select-input"
                 value={intervalInput}
                 disabled={isTraining}
-                onChange={(e) => setIntervalInput(e.target.value)}
+                onChange={(e) => handleIntervalChange(e.target.value)}
               >
                 {INTERVAL_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>
@@ -621,7 +648,7 @@ export default function App() {
               <p style={{ color: 'var(--c-text-secondary)' }}>
                 {trainingError || 'An error occurred while loading files. Ensure the yfinance backend ran successfully.'}
               </p>
-              <button className="btn-primary" onClick={() => loadData(targetSymbol)} style={{ width: 'auto', marginTop: '12px' }}>
+              <button className="btn-primary" onClick={() => loadData(targetSymbol, intervalInput)} style={{ width: 'auto', marginTop: '12px' }}>
                 <RefreshCw size={14} /> Try Again
               </button>
             </div>

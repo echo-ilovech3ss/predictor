@@ -1,4 +1,5 @@
 import os
+import sys
 import argparse
 import datetime
 import json
@@ -12,6 +13,15 @@ from xgboost import XGBClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
 from src.logger import logger
 from src.news_extractor import NewsExtractor
+
+# Force UTF-8 encoding for stdout and stderr to prevent UnicodeEncodeError on Windows terminals
+try:
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8')
+    if hasattr(sys.stderr, 'reconfigure'):
+        sys.stderr.reconfigure(encoding='utf-8')
+except Exception:
+    pass
 
 # Create directories if they don't exist
 DATA_CACHE_DIR = "data_cache"
@@ -1717,7 +1727,7 @@ def main():
         "A_net_return_pct": A_net,
         "B_net_return_pct": B_net
     }
-    update_mvp_results(symbol, results_summary)
+    update_mvp_results(f"{symbol}_{args.interval}", results_summary)
     rebuild_walkthrough_report()
 
     # ----------------------------------------------------
@@ -1966,20 +1976,30 @@ def main():
             logger.warning(f"Could not create directory {frontend_data_dir}: {e}")
             
     # Also write a local copy inside data_cache
-    local_detail_path = os.path.join(DATA_CACHE_DIR, f"{symbol.lower()}_run_details.json")
+    local_detail_path = os.path.join(DATA_CACHE_DIR, f"{symbol.lower()}_{args.interval.lower()}_run_details.json")
+    local_legacy_path = os.path.join(DATA_CACHE_DIR, f"{symbol.lower()}_run_details.json")
     try:
         with open(local_detail_path, "w") as f:
             json.dump(frontend_run_details, f, indent=2)
         logger.info(f"Saved run details to local cache: {local_detail_path}")
+        
+        with open(local_legacy_path, "w") as f:
+            json.dump(frontend_run_details, f, indent=2)
+        logger.info(f"Saved run details to legacy local cache: {local_legacy_path}")
     except Exception as e:
         logger.error(f"Failed to write run details to local cache: {e}")
     
     # Try saving to frontend public folder
-    frontend_json_path = os.path.join(frontend_data_dir, f"{symbol.lower()}.json")
+    frontend_json_path = os.path.join(frontend_data_dir, f"{symbol.lower()}_{args.interval.lower()}.json")
+    frontend_legacy_json_path = os.path.join(frontend_data_dir, f"{symbol.lower()}.json")
     try:
         with open(frontend_json_path, "w") as f:
             json.dump(frontend_run_details, f, indent=2)
         logger.info(f"Saved frontend JSON to: {frontend_json_path}")
+        
+        with open(frontend_legacy_json_path, "w") as f:
+            json.dump(frontend_run_details, f, indent=2)
+        logger.info(f"Saved frontend legacy JSON to: {frontend_legacy_json_path}")
     except Exception as e:
         logger.warning(f"Could not save JSON directly to frontend directory (expected if frontend folder not built yet): {e}")
 
@@ -1998,7 +2018,11 @@ def main():
     print("Today's News Headlines:")
     if today_headlines:
         for idx, headline in enumerate(today_headlines):
-            print(f"  {idx+1}. {headline}")
+            try:
+                print(f"  {idx+1}. {headline}")
+            except UnicodeEncodeError:
+                safe_headline = headline.encode('ascii', errors='replace').decode('ascii')
+                print(f"  {idx+1}. {safe_headline}")
     else:
         print("  No whitelisted headlines found for today.")
     print("========================================================\n")
