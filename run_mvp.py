@@ -422,9 +422,12 @@ def generate_synthetic_news_data(symbol: str, market_df: pd.DataFrame, horizon: 
     return df
 
 
-def get_next_market_candle(curr_date, delta, is_nifty):
+def get_next_market_candle(curr_date, delta, is_nifty, is_crypto=False):
     next_time = curr_date + delta
     
+    if is_crypto:
+        return next_time
+        
     if is_nifty:
         open_h, open_m = 9, 15
         close_h, close_m = 15, 30
@@ -1851,13 +1854,14 @@ def main():
         delta = datetime.timedelta(days=1)
         
     is_nifty = "NIFTY" in symbol.upper() or "^NSEI" in symbol.upper() or symbol.upper().endswith(".NS")
+    is_crypto = any(suffix in symbol.upper() for suffix in ["-USD", "-BTC", "-ETH", "-EUR", "-INR"]) or symbol.upper() in ["BTC", "ETH", "SOL", "DOGE", "ADA", "XRP"]
     while len(future_dates) < args.horizon + 1:
         if args.interval in ["1d", "1wk"]:
             curr_date += delta
-            if curr_date.weekday() >= 5:
+            if not is_crypto and curr_date.weekday() >= 5:
                 continue
         else:
-            curr_date = get_next_market_candle(curr_date, delta, is_nifty)
+            curr_date = get_next_market_candle(curr_date, delta, is_nifty, is_crypto)
         future_dates.append(curr_date)
             
     # Format dates based on interval (show time for intraday)
