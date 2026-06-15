@@ -1229,6 +1229,7 @@ def main():
     parser.add_argument("--tuning-trials", type=int, default=30, help="Number of Optuna trials for hyperparameter tuning (default: 30)")
     parser.add_argument("--horizon", type=int, default=5, help="Forecast horizon in days (default: 5)")
     parser.add_argument("--interval", type=str, default="1d", choices=["5m", "15m", "30m", "1h", "1d", "1wk"], help="Candle interval (default: 1d)")
+    parser.add_argument("--news-weight", type=float, default=0.0, help="Weight/damping factor for news features (default: 0.0 to remove/disable news)")
     args = parser.parse_args()
     
     symbol = args.symbol.upper()
@@ -1456,18 +1457,25 @@ def main():
         'guidance_count', 'product_launch_count', 'management_change_count',
         'avg_sentiment_roll3', 'avg_sentiment_lag1', 'weighted_sentiment_lag1'
     ]
-    news_multiplier = 1.0
-    if args.interval == "1h":
-        news_multiplier = 0.5
-    elif args.interval == "30m":
-        news_multiplier = 0.2
-    elif args.interval in ["15m", "5m"]:
-        news_multiplier = 0.1
-        
-    logger.info(f"Applying news damping factor: {news_multiplier} for interval {args.interval}")
-    for col in news_cols_to_damp:
-        if col in dataset.columns:
-            dataset[col] = dataset[col] * news_multiplier
+    # Determine the news multiplier based on --news-weight setting
+    # If the user sets --news-weight explicitly, we scale all news features by it.
+    # If --news-weight is 0.0 (default), we completely remove the news variance by setting them to constant neutral values.
+    if args.news_weight == 0.0:
+        logger.info("News features are disabled (--news-weight is 0.0). Setting all news columns to constant neutral values to eliminate variance.")
+        for col in news_cols_to_damp:
+            if col in dataset.columns:
+                if col in ['bull_avg', 'bear_avg']:
+                    dataset[col] = 5.0
+                elif col == 'risk_avg':
+                    dataset[col] = 2.0
+                else:
+                    dataset[col] = 0.0
+    else:
+        news_multiplier = args.news_weight
+        logger.info(f"Applying news damping factor: {news_multiplier} across all intervals")
+        for col in news_cols_to_damp:
+            if col in dataset.columns:
+                dataset[col] = dataset[col] * news_multiplier
     
     # Add Calendar features
     dataset['day_of_week'] = dataset.index.dayofweek
